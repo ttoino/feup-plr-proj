@@ -3,7 +3,16 @@
 
 :- use_module(library(codesio)).
 
-schedule(Assignments, NightShiftAssignments) :-
+schedule(
+    Day_Worker_Shift,
+    Day_Shift_Worker,
+    Worker_Day_Shift,
+    Shift_Day_Worker,
+    Day_Worker_NightShift,
+    Day_NightShift_Worker,
+    Worker_Day_NightShift,
+    NightShift_Day_Worker
+) :-
     workers(Workers),
     shifts(Shifts),
     night_shifts(NightShifts),
@@ -15,10 +24,17 @@ schedule(Assignments, NightShiftAssignments) :-
     alternative_shifts(AlternativeShifts),
     incompatible_shifts(IncompatibleShifts),
     preferred_shifts(PreferredShifts),
+    rotated_shifts(RotatedShifts),
 
     schedule(
-        Assignments,
-        NightShiftAssignments,
+        Day_Worker_Shift,
+        Day_Shift_Worker,
+        Worker_Day_Shift,
+        Shift_Day_Worker,
+        Day_Worker_NightShift,
+        Day_NightShift_Worker,
+        Worker_Day_NightShift,
+        NightShift_Day_Worker,
         Workers,
         Shifts,
         NightShifts,
@@ -29,16 +45,18 @@ schedule(Assignments, NightShiftAssignments) :-
         WeeklyLateShifts,
         AlternativeShifts,
         IncompatibleShifts,
-        PreferredShifts
+        PreferredShifts,
+        RotatedShifts
     ).
 
-print_schedule(Assignments, NightShiftAssignments) :-
+print_schedule(
+    Shift_Day_Worker,
+    NightShift_Day_Worker
+) :-
     workers(Workers),
     shifts(Shifts),
     night_shifts(NightShifts),
     days(Days),
-
-    length(Workers, NumberOfWorkers),
 
     append([Shifts, NightShifts, Days, Workers], Columns),
 
@@ -52,17 +70,28 @@ print_schedule(Assignments, NightShiftAssignments) :-
         format(ColumnFormat, [Day])
     ), nl,
 
-    ( for(Index, 1, NumberOfWorkers), param(Workers), param(ColumnFormat), param(Shifts), param(Assignments) do
-        nth1(Index, Workers, Worker),
-        format(ColumnFormat, [Worker]),
-        ( foreach(Assignment, Assignments), param(Index), param(Shifts), param(ColumnFormat) do
-            nth1(Index, Assignment, ShiftIndex),
-            print_shift(ShiftIndex, Shifts, ColumnFormat)
-        ), nl
+    ( foreach(Day_Worker, Shift_Day_Worker), foreach(Shift, Shifts), param(Workers), param(ColumnFormat) do
+        format(ColumnFormat, [Shift]),
+        ( foreach(Worker, Day_Worker), param(Workers), param(ColumnFormat) do
+            print_worker(Worker, Workers, ColumnFormat)
+        ),
+        nl
+    ),
+    
+    ( foreach(Day_Worker, NightShift_Day_Worker), foreach(NightShift, NightShifts), param(Workers), param(ColumnFormat) do
+        format(ColumnFormat, [NightShift]),
+        ( foreach(Worker, Day_Worker), param(Workers), param(ColumnFormat) do
+            print_worker(Worker, Workers, ColumnFormat)
+        ),
+        nl
     ).
 
-print_shift(0, _, ColumnFormat) :-
-    format(ColumnFormat, ['N/A']).
-print_shift(ShiftIndex, Shifts, ColumnFormat) :-
-    nth1(ShiftIndex, Shifts, Shift),
-    format(ColumnFormat, [Shift]).
+print_worker(0, _, ColumnFormat) :-
+    format(ColumnFormat, ['']).
+print_worker(WorkerIndex, Workers, ColumnFormat) :-
+    nth1(WorkerIndex, Workers, Worker),
+    format(ColumnFormat, [Worker]).
+
+main :-
+    schedule(_, _, _, Shift_Day_Worker, _, _, _, NightShift_Day_Worker), !,
+    print_schedule(Shift_Day_Worker, NightShift_Day_Worker).

@@ -93,3 +93,6 @@ preferred_shifts([
     [ ],
     [ ]
 ]).
+
+% Which shifts must be rotated by each worker
+rotated_shifts([ 10 ]).
