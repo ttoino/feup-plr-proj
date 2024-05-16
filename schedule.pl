@@ -24,7 +24,9 @@ schedule(
     AlternativeShifts,
     IncompatibleShifts,
     PreferredShifts,
-    RotatedShifts
+    RotatedShifts,
+    KnownShifts,
+    KnownNightShifts
 ) :-
     length(Workers, NumberOfWorkers),
     length(Shifts, NumberOfShifts),
@@ -39,15 +41,29 @@ schedule(
     transpose(Day_Worker_NightShift, Worker_Day_NightShift),
     transpose(Day_NightShift_Worker, NightShift_Day_Worker),
 
+    % Setup known shifts
+    maplist(eq, Worker_Day_Shift, KnownShifts),
+
+    % Setup known night shifts
+    maplist(eq, Shift_Day_Worker, KnownNightShifts),
+
     setup_overtime_shifts(Day_Worker_Shift, OvertimeShifts, DailyOvertimeShifts),
 
     setup_incompatible_shifts(Day_Worker_Shift, IncompatibleShifts),
 
-    % setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts),
+    setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts),
 
     setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts),
 
     setup_rotated_shifts(Shift_Day_Worker, RotatedShifts),
+
+    setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift),
+
+    setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts),
+
+    ( foreach(NightShift_Worker, Day_NightShift_Worker) do
+        count(0, NightShift_Worker, #=, 0)
+    ),
 
     % All variables to be flattened
     append([
@@ -58,17 +74,17 @@ schedule(
     ], AllAssignments),
     append(AllAssignments, Variables),
 
-    % count(0, Variables, #=, 4),
-
+    write('Searching...'), nl, !,
     labeling([
+        time_out(60000, Flag),
         ffc,
         bisect,
-        down,
-        time_out(60000, Flag)
-    ], Variables).
+        middle
+    ], Variables),
+    Flag \= time_out. 
 
-% Assignments[Day][Worker] = Shift
-% AssignmentsInverse[Day][Shift] = Worker
+% Sets the domain of the decision variables, and initializes alternative
+% matrices using channeling constraints.
 setup_domain_and_channeling(Day_Worker_Shift, Day_Shift_Worker, NumberOfDays, NumberOfWorkers, NumberOfShifts) :-
     length(Day_Worker_Shift, NumberOfDays),
     length(Day_Shift_Worker, NumberOfDays),
@@ -93,13 +109,17 @@ setup_domain_and_channeling(Day_Worker_Shift, Day_Shift_Worker, NumberOfDays, Nu
         )
     ).
 
+% Constraints the maximum number of overtime shifts for each worker
 setup_overtime_shifts(Day_Worker_Shift, OvertimeShifts, DailyOvertimeShifts) :-
     ( foreach(Worker_Shift, Day_Worker_Shift), param(OvertimeShifts), param(DailyOvertimeShifts) do
         counts(OvertimeShifts, Worker_Shift, DailyOvertimeShifts)
     ).
 
+% Prevents alternative shifts from being chosen in the same day
 setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
-    ( foreach(Shift_Worker, Day_Shift_Worker), param(AlternativeShifts) do
+    length(AlternativeShifts, NumberOfAlternativeShifts),
+    ( foreach(Shift_Worker, Day_Shift_Worker), param(AlternativeShifts), param(NumberOfAlternativeShifts) do
+        count(0, Shift_Worker, #=, NumberOfAlternativeShifts),
         ( foreach(Shift1-Shift2, AlternativeShifts), param(Shift_Worker) do
             nth1(Shift1, Shift_Worker, Worker1),
             nth1(Shift2, Shift_Worker, Worker2),
@@ -108,6 +128,7 @@ setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
         )
     ).
 
+% Prevents incompatible shifts from being chosen by each worker
 setup_incompatible_shifts(Day_Worker_Shift, IncompatibleShifts) :-
     ( foreach(Worker_Shift, Day_Worker_Shift), param(IncompatibleShifts) do
         ( foreach(Shift, Worker_Shift), foreach(IncompatibleShiftsForWorker, IncompatibleShifts) do 
@@ -117,13 +138,35 @@ setup_incompatible_shifts(Day_Worker_Shift, IncompatibleShifts) :-
         )
     ).
 
+% Constrains the maximum number of late shifts for each worker
 setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts) :-
     ( foreach(Day_Shift, Worker_Day_Shift), param(LateShifts), param(WeeklyLateShifts) do
-        counts(LateShifts, Day_Shift, WeeklyLateShifts)
+        counts(LateShifts, Day_Shift, WeeklyLateShiftsForWorker),
+        WeeklyLateShiftsForWorker #=< WeeklyLateShifts
     ).
 
+% Rotates shifts between all workers
 setup_rotated_shifts(Shift_Day_Worker, RotatedShifts) :-
     ( foreach(Shift, RotatedShifts), param(Shift_Day_Worker) do
         nth1(Shift, Shift_Day_Worker, Day_Worker),
         all_distinct_except_0(Day_Worker)
+    ).
+
+% Forces workers that have a night shift assigned to also have a normal shift
+% assigned in each day
+setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift) :-
+    ( foreach(Worker_Shift, Day_Worker_Shift), foreach(Worker_NightShift, Day_Worker_NightShift) do
+        ( foreach(Shift, Worker_Shift), foreach(NightShift, Worker_NightShift) do
+            (NightShift #\= 0) #=> (Shift #\= 0)
+        )
+    ).
+
+% Forces workers that have a late shift assigned to not have a night shift
+% assigned
+setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
+    ( foreach(Shift_Worker, Day_Shift_Worker), foreach(Worker_NightShift, Day_Worker_NightShift), param(LateShifts) do
+        ( foreach(LateShift, LateShifts), param(Shift_Worker), param(Worker_NightShift) do
+            nth1(LateShift, Shift_Worker, Worker),
+            (Worker #\= 0) #=> (element(Worker, Worker_NightShift, 0))
+        )
     ).

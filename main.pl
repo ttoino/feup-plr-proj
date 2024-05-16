@@ -25,6 +25,8 @@ schedule(
     incompatible_shifts(IncompatibleShifts),
     preferred_shifts(PreferredShifts),
     rotated_shifts(RotatedShifts),
+    known_shifts(KnownShifts),
+    known_night_shifts(KnownNightShifts),
 
     schedule(
         Day_Worker_Shift,
@@ -46,7 +48,9 @@ schedule(
         AlternativeShifts,
         IncompatibleShifts,
         PreferredShifts,
-        RotatedShifts
+        RotatedShifts,
+        KnownShifts,
+        KnownNightShifts
     ).
 
 print_schedule(
@@ -76,7 +80,7 @@ print_schedule(
             print_worker(Worker, Workers, ColumnFormat)
         ),
         nl
-    ),
+    ), nl,
     
     ( foreach(Day_Worker, NightShift_Day_Worker), foreach(NightShift, NightShifts), param(Workers), param(ColumnFormat) do
         format(ColumnFormat, [NightShift]),

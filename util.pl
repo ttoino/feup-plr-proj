@@ -5,3 +5,5 @@ counts([Val | Vals], List, Count) :-
     count(Val, List, #=, ThisCount),
     counts(Vals, List, PartialCount),
     Count #= ThisCount + PartialCount.
+
+eq(A, B) :- A #= B.

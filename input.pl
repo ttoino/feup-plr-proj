@@ -46,21 +46,25 @@ days([
 ]).
 
 % Which shifts grant overtime
+% Values must be shifts
 overtime_shifts([ 4, 5, 7, 9 ]).
 
 % How many daily overtime shifts are allowed
 daily_overtime_shifts( 2 ).
 
 % Which shifts are considered late shifts
+% Values must be shifts
 late_shifts([ 4, 5, 7, 9, 10, 12 ]).
 
 % How many weekly late shifts are allowed
 weekly_late_shifts( 2 ).
 
 % Which shifts are incompatible with each other
+% Values must be pairs of shifts
 alternative_shifts([ 3-4, 6-7, 8-9 ]).
 
 % Which shifts are incompatible with each worker
+% Each line is a worker, values must be shifts
 incompatible_shifts([
     [ ],                               % Alice
     [ ],                               % Bob
@@ -78,21 +82,47 @@ incompatible_shifts([
 ]).
 
 % Which shifts are preferred by each worker
+% Each line is a worker, values must be shifts
 preferred_shifts([
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ],
-    [ ]
+    [ ],      % Alice
+    [ ],      % Bob
+    [ ],      % Carol
+    [ ],      % David
+    [ 3, 4 ], % Erin
+    [ ],      % Frank
+    [ ],      % Grace
+    [ ],      % Heidi
+    [ ],      % Ivan
+    [ ],      % Judy
+    [ ],      % Michael
+    [ ],      % Olivia
+    [ ]       % Peggy
 ]).
 
 % Which shifts must be rotated by each worker
+% Values must be shifts
 rotated_shifts([ 10 ]).
+
+% Shifts that are known ahead of time
+% Each line is a worker, each column is a day
+known_shifts([
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _],
+    [_, _, _, _, _]
+]).
+
+% Night shifts that are known ahead of time
+% Each line is a shift, each column is a day
+known_night_shifts([
+    [_, _, _, _, _]
+]).
