@@ -98,4 +98,7 @@ print_worker(WorkerIndex, Workers, ColumnFormat) :-
 
 main :-
     schedule(_, _, _, Shift_Day_Worker, _, _, _, NightShift_Day_Worker), !,
+    fd_statistics,
+    statistics,
     print_schedule(Shift_Day_Worker, NightShift_Day_Worker).
+main :- write('Could not find solution in the given time'), nl.

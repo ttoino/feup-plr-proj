@@ -42,10 +42,10 @@ schedule(
     transpose(Day_NightShift_Worker, NightShift_Day_Worker),
 
     % Setup known shifts
-    maplist(eq, Worker_Day_Shift, KnownShifts),
+    maplist(eq_list, Worker_Day_Shift, KnownShifts),
 
     % Setup known night shifts
-    maplist(eq, Shift_Day_Worker, KnownNightShifts),
+    maplist(eq_list, NightShift_Day_Worker, KnownNightShifts),
 
     setup_overtime_shifts(Day_Worker_Shift, OvertimeShifts, DailyOvertimeShifts),
 
@@ -76,9 +76,9 @@ schedule(
 
     write('Searching...'), nl, !,
     labeling([
-        time_out(60000, Flag),
-        ffc,
-        bisect,
+        time_out(10000, Flag),
+        % ffc,
+        % bisect,
         middle
     ], Variables),
     Flag \= time_out. 

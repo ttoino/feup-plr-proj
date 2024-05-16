@@ -6,4 +6,6 @@ counts([Val | Vals], List, Count) :-
     counts(Vals, List, PartialCount),
     Count #= ThisCount + PartialCount.
 
+eq_list(A, B) :- maplist(eq, A, B).
+
 eq(A, B) :- A #= B.
