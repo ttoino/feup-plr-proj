@@ -54,6 +54,7 @@ schedule(
     ).
 
 print_schedule(
+    Day_Worker_Shift,
     Shift_Day_Worker,
     NightShift_Day_Worker
 ) :-
@@ -62,7 +63,17 @@ print_schedule(
     night_shifts(NightShifts),
     days(Days),
 
-    append([Shifts, NightShifts, Days, Workers], Columns),
+    same_length(Days, Absences),
+    ( foreach(Worker_Shift, Day_Worker_Shift), foreach(Absence, Absences) do
+        ( count(Worker, 1, _), foreach(Shift, Worker_Shift), fromto([], In, Out, Absence) do
+            Shift = 0,
+            last(In, Worker, Out);
+            In = Out
+        )
+    ),
+    transpose(Absences, RealAbsences),
+
+    append([Shifts, NightShifts, Days, Workers, ['Absence']], Columns),
 
     maplist(atom_length, Columns, ColumnLengths),
     max_member(ColumnSize, ColumnLengths),
@@ -72,7 +83,7 @@ print_schedule(
     format(ColumnFormat, ['']),
     ( foreach(Day, Days), param(ColumnFormat) do
         format(ColumnFormat, [Day])
-    ), nl,
+    ), nl, nl,
 
     ( foreach(Day_Worker, Shift_Day_Worker), foreach(Shift, Shifts), param(Workers), param(ColumnFormat) do
         format(ColumnFormat, [Shift]),
@@ -88,6 +99,14 @@ print_schedule(
             print_worker(Worker, Workers, ColumnFormat)
         ),
         nl
+    ), nl,
+    
+    ( foreach(Absence, RealAbsences), param(Workers), param(ColumnFormat) do
+        format(ColumnFormat, ['Absence']),
+        ( foreach(Worker, Absence), param(Workers), param(ColumnFormat) do
+            print_worker(Worker, Workers, ColumnFormat)
+        ),
+        nl
     ).
 
 print_worker(0, _, ColumnFormat) :-
@@ -97,8 +116,8 @@ print_worker(WorkerIndex, Workers, ColumnFormat) :-
     format(ColumnFormat, [Worker]).
 
 main :-
-    schedule(_, _, _, Shift_Day_Worker, _, _, _, NightShift_Day_Worker), !,
+    schedule(Day_Worker_Shift, _, _, Shift_Day_Worker, _, _, _, NightShift_Day_Worker), !,
     fd_statistics,
     statistics,
-    print_schedule(Shift_Day_Worker, NightShift_Day_Worker).
+    print_schedule(Day_Worker_Shift, Shift_Day_Worker, NightShift_Day_Worker).
 main :- write('Could not find solution in the given time'), nl.

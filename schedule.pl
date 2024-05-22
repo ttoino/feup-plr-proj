@@ -65,6 +65,9 @@ schedule(
         count(0, NightShift_Worker, #=, 0)
     ),
 
+    calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores),
+    sum(PreferenceScores, #=, Score),
+
     % All variables to be flattened
     append([
         Day_Worker_Shift, 
@@ -74,9 +77,10 @@ schedule(
     ], AllAssignments),
     append(AllAssignments, Variables),
 
-    write('Searching...'), nl, !,
+    write('Searching...'), nl,
     labeling([
         time_out(10000, Flag),
+        maximize(Score),
         % ffc,
         % bisect,
         middle
@@ -168,5 +172,13 @@ setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
         ( foreach(LateShift, LateShifts), param(Shift_Worker), param(Worker_NightShift) do
             nth1(LateShift, Shift_Worker, Worker),
             (Worker #\= 0) #=> (element(Worker, Worker_NightShift, 0))
+        )
+    ).
+
+calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores) :-
+    ( foreach(Day_Shift, Worker_Day_Shift), foreach(Shifts, PreferredShifts), foreach(Score, PreferenceScores) do
+        ( foreach(Shift, Shifts), fromto(0, In, Out, Score), param(Day_Shift) do
+            count(Shift, Day_Shift, #=, Count),
+            Out #= In + Count
         )
     ).

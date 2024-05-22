@@ -66,37 +66,37 @@ alternative_shifts([ 3-4, 6-7, 8-9 ]).
 % Which shifts are incompatible with each worker
 % Each line is a worker, values must be shifts
 incompatible_shifts([
-    [ ],                               % Alice
-    [ ],                               % Bob
-    [ 11, 12 ],                        % Carol
-    [ 11, 12 ],                        % David
+    [ 4 ],                             % Alice
+    [ 4 ],                             % Bob
+    [ 4, 11, 12 ],                     % Carol
+    [ 4, 11, 12 ],                     % David
     [ 11, 12 ],                        % Erin
-    [ ],                               % Frank
-    [ ],                               % Grace
-    [ 11, 12 ],                        % Heidi
-    [ 11, 12 ],                        % Ivan
+    [ 4 ],                             % Frank
+    [ 4 ],                             % Grace
+    [ 4, 11, 12 ],                     % Heidi
+    [ 4, 11, 12 ],                     % Ivan
     [ 11, 12 ],                        % Judy
-    [ ],                               % Michael
+    [ 4 ],                             % Michael
     [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ], % Olivia
-    [ ]                                % Peggy
+    [ 4 ]                              % Peggy
 ]).
 
 % Which shifts are preferred by each worker
 % Each line is a worker, values must be shifts
 preferred_shifts([
-    [ ],      % Alice
-    [ ],      % Bob
-    [ ],      % Carol
-    [ ],      % David
-    [ 3, 4 ], % Erin
-    [ ],      % Frank
-    [ ],      % Grace
-    [ ],      % Heidi
-    [ ],      % Ivan
-    [ ],      % Judy
-    [ ],      % Michael
-    [ ],      % Olivia
-    [ ]       % Peggy
+    [ ],               % Alice
+    [ ],               % Bob
+    [ ],               % Carol
+    [ 8, 9, 10 ],      % David
+    [ 3, 4 ],          % Erin
+    [ ],               % Frank
+    [ ],               % Grace
+    [ ],               % Heidi
+    [ ],               % Ivan
+    [ 2, 3, 4, 10 ],   % Judy
+    [ ],               % Michael
+    [ ],               % Olivia
+    [ 6, 7, 8, 9, 10 ] % Peggy
 ]).
 
 % Which shifts must be rotated by each worker
