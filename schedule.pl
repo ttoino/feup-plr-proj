@@ -13,6 +13,9 @@ schedule(
     Day_NightShift_Worker,
     Worker_Day_NightShift,
     NightShift_Day_Worker,
+    AvailableAbsencesOut,
+    RotatedShiftScoresOut,
+    OvertimeShiftScoresOut,
     Workers,
     Shifts,
     NightShifts,
@@ -26,7 +29,10 @@ schedule(
     PreferredShifts,
     RotatedShifts,
     KnownShifts,
-    KnownNightShifts
+    KnownNightShifts,
+    AvailableAbsences,
+    RotatedShiftScores,
+    OvertimeShiftScores
 ) :-
     length(Workers, NumberOfWorkers),
     length(Shifts, NumberOfShifts),
@@ -66,6 +72,13 @@ schedule(
     ),
 
     calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores),
+
+    calculate_absences(Worker_Day_Shift, AvailableAbsences, AvailableAbsencesOut),
+
+    calculate_rotated_shift_scores(Worker_Day_Shift, RotatedShifts, RotatedShiftScores, RotatedShiftScoresOut),
+
+    calculate_overtime_shift_scores(Worker_Day_Shift, OvertimeShifts, OvertimeShiftScores, OvertimeShiftScoresOut),
+
     sum(PreferenceScores, #=, Score),
 
     % All variables to be flattened
@@ -93,7 +106,10 @@ setup_domain_and_channeling(Day_Worker_Shift, Day_Shift_Worker, NumberOfDays, Nu
     length(Day_Worker_Shift, NumberOfDays),
     length(Day_Shift_Worker, NumberOfDays),
 
-    ( foreach(Worker_Shift, Day_Worker_Shift), foreach(Shift_Worker, Day_Shift_Worker), param(NumberOfWorkers), param(NumberOfShifts) do
+    ( foreach(Worker_Shift, Day_Worker_Shift), 
+      foreach(Shift_Worker, Day_Shift_Worker), 
+      param(NumberOfWorkers), 
+      param(NumberOfShifts) do
         length(Worker_Shift, NumberOfWorkers),
         domain(Worker_Shift, 0, NumberOfShifts),
         all_distinct_except_0(Worker_Shift),
@@ -102,12 +118,16 @@ setup_domain_and_channeling(Day_Worker_Shift, Day_Shift_Worker, NumberOfDays, Nu
         domain(Shift_Worker, 0, NumberOfWorkers),
         all_distinct_except_0(Shift_Worker),
 
-        ( for(Worker, 1, NumberOfWorkers), param(Worker_Shift), param(Shift_Worker) do
+        ( for(Worker, 1, NumberOfWorkers), 
+          param(Worker_Shift), 
+          param(Shift_Worker) do
             nth1(Worker, Worker_Shift, Shift),
             element(Shift, Shift_Worker, Worker) #<=> (Shift #\= 0)
         ),
 
-        ( for(Shift, 1, NumberOfShifts), param(Worker_Shift), param(Shift_Worker) do
+        ( for(Shift, 1, NumberOfShifts), 
+          param(Worker_Shift), 
+          param(Shift_Worker) do
             nth1(Shift, Shift_Worker, Worker),
             element(Worker, Worker_Shift, Shift) #<=> (Worker #\= 0)
         )
@@ -115,16 +135,21 @@ setup_domain_and_channeling(Day_Worker_Shift, Day_Shift_Worker, NumberOfDays, Nu
 
 % Constraints the maximum number of overtime shifts for each worker
 setup_overtime_shifts(Day_Worker_Shift, OvertimeShifts, DailyOvertimeShifts) :-
-    ( foreach(Worker_Shift, Day_Worker_Shift), param(OvertimeShifts), param(DailyOvertimeShifts) do
+    ( foreach(Worker_Shift, Day_Worker_Shift), 
+      param(OvertimeShifts), 
+      param(DailyOvertimeShifts) do
         counts(OvertimeShifts, Worker_Shift, DailyOvertimeShifts)
     ).
 
 % Prevents alternative shifts from being chosen in the same day
 setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
     length(AlternativeShifts, NumberOfAlternativeShifts),
-    ( foreach(Shift_Worker, Day_Shift_Worker), param(AlternativeShifts), param(NumberOfAlternativeShifts) do
+    ( foreach(Shift_Worker, Day_Shift_Worker), 
+      param(AlternativeShifts), 
+      param(NumberOfAlternativeShifts) do
         count(0, Shift_Worker, #=, NumberOfAlternativeShifts),
-        ( foreach(Shift1-Shift2, AlternativeShifts), param(Shift_Worker) do
+        ( foreach(Shift1-Shift2, AlternativeShifts), 
+          param(Shift_Worker) do
             nth1(Shift1, Shift_Worker, Worker1),
             nth1(Shift2, Shift_Worker, Worker2),
             Worker1 #= 0 #\/ Worker2 #= 0,
@@ -134,9 +159,12 @@ setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
 
 % Prevents incompatible shifts from being chosen by each worker
 setup_incompatible_shifts(Day_Worker_Shift, IncompatibleShifts) :-
-    ( foreach(Worker_Shift, Day_Worker_Shift), param(IncompatibleShifts) do
-        ( foreach(Shift, Worker_Shift), foreach(IncompatibleShiftsForWorker, IncompatibleShifts) do 
-            ( foreach(IncompatibleShift, IncompatibleShiftsForWorker), param(Shift) do
+    ( foreach(Worker_Shift, Day_Worker_Shift), 
+      param(IncompatibleShifts) do
+        ( foreach(Shift, Worker_Shift), 
+          foreach(IncompatibleShiftsForWorker, IncompatibleShifts) do 
+            ( foreach(IncompatibleShift, IncompatibleShiftsForWorker), 
+              param(Shift) do
                 Shift #\= IncompatibleShift
             )
         )
@@ -144,14 +172,17 @@ setup_incompatible_shifts(Day_Worker_Shift, IncompatibleShifts) :-
 
 % Constrains the maximum number of late shifts for each worker
 setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts) :-
-    ( foreach(Day_Shift, Worker_Day_Shift), param(LateShifts), param(WeeklyLateShifts) do
+    ( foreach(Day_Shift, Worker_Day_Shift), 
+      param(LateShifts), 
+      param(WeeklyLateShifts) do
         counts(LateShifts, Day_Shift, WeeklyLateShiftsForWorker),
         WeeklyLateShiftsForWorker #=< WeeklyLateShifts
     ).
 
 % Rotates shifts between all workers
 setup_rotated_shifts(Shift_Day_Worker, RotatedShifts) :-
-    ( foreach(Shift, RotatedShifts), param(Shift_Day_Worker) do
+    ( foreach(Shift, RotatedShifts), 
+      param(Shift_Day_Worker) do
         nth1(Shift, Shift_Day_Worker, Day_Worker),
         all_distinct_except_0(Day_Worker)
     ).
@@ -159,8 +190,10 @@ setup_rotated_shifts(Shift_Day_Worker, RotatedShifts) :-
 % Forces workers that have a night shift assigned to also have a normal shift
 % assigned in each day
 setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift) :-
-    ( foreach(Worker_Shift, Day_Worker_Shift), foreach(Worker_NightShift, Day_Worker_NightShift) do
-        ( foreach(Shift, Worker_Shift), foreach(NightShift, Worker_NightShift) do
+    ( foreach(Worker_Shift, Day_Worker_Shift), 
+      foreach(Worker_NightShift, Day_Worker_NightShift) do
+        ( foreach(Shift, Worker_Shift), 
+          foreach(NightShift, Worker_NightShift) do
             (NightShift #\= 0) #=> (Shift #\= 0)
         )
     ).
@@ -168,17 +201,48 @@ setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift) :-
 % Forces workers that have a late shift assigned to not have a night shift
 % assigned
 setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
-    ( foreach(Shift_Worker, Day_Shift_Worker), foreach(Worker_NightShift, Day_Worker_NightShift), param(LateShifts) do
-        ( foreach(LateShift, LateShifts), param(Shift_Worker), param(Worker_NightShift) do
+    ( foreach(Shift_Worker, Day_Shift_Worker), 
+      foreach(Worker_NightShift, Day_Worker_NightShift), 
+      param(LateShifts) do
+        ( foreach(LateShift, LateShifts), 
+          param(Shift_Worker), 
+          param(Worker_NightShift) do
             nth1(LateShift, Shift_Worker, Worker),
             (Worker #\= 0) #=> (element(Worker, Worker_NightShift, 0))
         )
     ).
 
 calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores) :-
-    ( foreach(Day_Shift, Worker_Day_Shift), foreach(Shifts, PreferredShifts), foreach(Score, PreferenceScores) do
-        ( foreach(Shift, Shifts), fromto(0, In, Out, Score), param(Day_Shift) do
-            count(Shift, Day_Shift, #=, Count),
-            Out #= In + Count
+    maplist(counts, PreferredShifts, Worker_Day_Shift, PreferenceScores).
+
+calculate_absences(Worker_Day_Shift, AvailableAbsences, AvailableAbsencesOut) :-
+    ( foreach(Day_Shift, Worker_Day_Shift), 
+      foreach(AvailableAbsence, AvailableAbsences), 
+      foreach(AvailableAbsenceOut, AvailableAbsencesOut) do
+        count(0, Day_Shift, #=, UsedAbsences),
+        AvailableAbsenceOut #>= 0,
+        AvailableAbsenceOut #= AvailableAbsence - UsedAbsences
+    ).
+
+calculate_rotated_shift_scores(Worker_Day_Shift, RotatedShifts, RotatedShiftScores, RotatedShiftScoresOut) :-
+    ( foreach(Day_Shift, Worker_Day_Shift), 
+      foreach(RotatedShiftScore, RotatedShiftScores), 
+      foreach(RotatedShiftScoreOut, RotatedShiftScoresOut), 
+      param(RotatedShifts) do
+        ( foreach(RotatedShift, RotatedShifts), 
+          foreach(RotatedShiftScoreEl, RotatedShiftScore), 
+          foreach(RotatedShiftScoreOutEl, RotatedShiftScoreOut), 
+          param(Day_Shift) do
+            count(RotatedShift, Day_Shift, #=, RotatedShiftScoreTemp),
+            RotatedShiftScoreOutEl #= RotatedShiftScoreTemp + RotatedShiftScoreEl
         )
+    ).
+
+calculate_overtime_shift_scores(Worker_Day_Shift, OvertimeShifts, OvertimeShiftScores, OvertimeShiftScoresOut) :-
+    ( foreach(Day_Shift, Worker_Day_Shift), 
+      foreach(OvertimeShiftScore, OvertimeShiftScores), 
+      foreach(OvertimeShiftScoreOut, OvertimeShiftScoresOut), 
+      param(OvertimeShifts) do
+        counts(OvertimeShifts, Day_Shift, OvertimeShiftScoreTemp),
+        OvertimeShiftScoreOut #= OvertimeShiftScoreTemp + OvertimeShiftScore
     ).
