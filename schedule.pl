@@ -16,6 +16,8 @@ schedule(
     AvailableAbsencesOut,
     RotatedShiftScoresOut,
     OvertimeShiftScoresOut,
+    NightShiftScoresOut,
+    Score,
     Workers,
     Shifts,
     NightShifts,
@@ -27,12 +29,14 @@ schedule(
     AlternativeShifts,
     IncompatibleShifts,
     PreferredShifts,
+    PreferredNightShifts,
     RotatedShifts,
     KnownShifts,
     KnownNightShifts,
     AvailableAbsences,
     RotatedShiftScores,
-    OvertimeShiftScores
+    OvertimeShiftScores,
+    NightShiftScores
 ) :-
     length(Workers, NumberOfWorkers),
     length(Shifts, NumberOfShifts),
@@ -72,14 +76,36 @@ schedule(
     ),
 
     calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores),
+    calculate_preference_scores(Worker_Day_NightShift, PreferredNightShifts, NightPreferenceScores),
+
+    calculate_priority_preference_scores(Worker_Day_Shift, Worker_Day_NightShift, PreferredShifts, PriorityPreferenceScores),
 
     calculate_absences(Worker_Day_Shift, AvailableAbsences, AvailableAbsencesOut),
+    score_distances(AvailableAbsencesOut, AvailableAbsencesScore),
 
     calculate_rotated_shift_scores(Worker_Day_Shift, RotatedShifts, RotatedShiftScores, RotatedShiftScoresOut),
+    transpose(RotatedShiftScoresOut, RotatedShiftScoresOutTransposed),
+    maplist(score_distances, RotatedShiftScoresOutTransposed, RotatedShiftScoresDistances),
+    sum(RotatedShiftScoresDistances, #=, RotatedShiftScore),
 
     calculate_overtime_shift_scores(Worker_Day_Shift, OvertimeShifts, OvertimeShiftScores, OvertimeShiftScoresOut),
+    score_distances(OvertimeShiftScoresOut, OvertimeShiftScore),
 
-    sum(PreferenceScores, #=, Score),
+    calculate_night_shift_scores(Worker_Day_NightShift, NightShiftScores, NightShiftScoresOut),
+    score_distances(NightShiftScores, NightShiftScore),
+
+    sums([
+        PreferenceScores,
+        NightPreferenceScores,
+        PriorityPreferenceScores
+    ], MaxiScore),
+    sum([
+        AvailableAbsencesScore,
+        RotatedShiftScore,
+        OvertimeShiftScore,
+        NightShiftScore
+    ], #=, MiniScore),
+    Score #= MaxiScore - MiniScore,
 
     % All variables to be flattened
     append([
@@ -89,16 +115,16 @@ schedule(
         Day_NightShift_Worker
     ], AllAssignments),
     append(AllAssignments, Variables),
+    append([Score], Variables, AllVariables),
 
     write('Searching...'), nl,
     labeling([
-        time_out(10000, Flag),
+        time_out(60000, Flag),
+        % all,
         maximize(Score),
-        % ffc,
-        % bisect,
+        ffc,
         middle
-    ], Variables),
-    Flag \= time_out. 
+    ], AllVariables).
 
 % Sets the domain of the decision variables, and initializes alternative
 % matrices using channeling constraints.
@@ -215,6 +241,19 @@ setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
 calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores) :-
     maplist(counts, PreferredShifts, Worker_Day_Shift, PreferenceScores).
 
+calculate_priority_preference_scores(Worker_Day_Shift, Worker_Day_NightShift, PreferredShifts, PriorityPreferenceScores) :-
+    ( foreach(Day_Shift, Worker_Day_Shift), 
+      foreach(Day_NightShift, Worker_Day_NightShift), 
+      foreach(PreferredShift, PreferredShifts), 
+      foreach(PriorityPreferenceScore, PriorityPreferenceScores) do
+        ( foreach(Shift, Day_Shift), 
+          foreach(NightShift, Day_NightShift), 
+          param(PreferredShift),
+          fromto(0, In, Out, PriorityPreferenceScore) do
+            Out #= In + ((NightShift #\= 0) #/\ element(_, PreferredShift, Shift))
+        )
+    ).
+
 calculate_absences(Worker_Day_Shift, AvailableAbsences, AvailableAbsencesOut) :-
     ( foreach(Day_Shift, Worker_Day_Shift), 
       foreach(AvailableAbsence, AvailableAbsences), 
@@ -245,4 +284,25 @@ calculate_overtime_shift_scores(Worker_Day_Shift, OvertimeShifts, OvertimeShiftS
       param(OvertimeShifts) do
         counts(OvertimeShifts, Day_Shift, OvertimeShiftScoreTemp),
         OvertimeShiftScoreOut #= OvertimeShiftScoreTemp + OvertimeShiftScore
+    ).
+
+calculate_night_shift_scores(Worker_Day_NightShift, NightShiftScores, NightShiftScoresOut) :-
+    ( foreach(Day_NightShift, Worker_Day_NightShift), 
+      foreach(NightShiftScore, NightShiftScores),
+      foreach(NightShiftScoreOut, NightShiftScoresOut) do
+        ( foreach(NightShift, Day_NightShift), 
+          fromto(NightShiftScore, In, Out, NightShiftScoreOut) do
+            Out #= In + (NightShift #\= 0)
+        )
+    ).
+
+score_distances(Scores, DistancesSum) :-
+    ( foreach(Score1, Scores),
+      param(Scores),
+      fromto(0, DistancesSumIn, DistancesSumOut, DistancesSum) do
+        ( foreach(Score2, Scores),
+          param(Score1),
+          fromto(DistancesSumIn, In, Out, DistancesSumOut) do
+            Out #= In + abs(Score1 - Score2)
+        )
     ).

@@ -47,7 +47,7 @@ days([
 
 % Which shifts grant overtime
 % Values must be shifts
-overtime_shifts([ 4, 5, 7, 9 ]).
+overtime_shifts([ 4, 5, 7, 9, 10 ]).
 
 % How many daily overtime shifts are allowed
 daily_overtime_shifts( 2 ).
@@ -97,6 +97,24 @@ preferred_shifts([
     [ ],               % Michael
     [ ],               % Olivia
     [ 6, 7, 8, 9, 10 ] % Peggy
+]).
+
+% Which night shifts are preferred by each worker
+% Each line is a worker, values must be night shifts
+preferred_night_shifts([
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ],
+    [ ]
 ]).
 
 % Which shifts must be rotated by each worker
@@ -160,6 +178,22 @@ rotated_shift_scores([
 ]).
 
 overtime_shift_scores([
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+]).
+
+night_shift_scores([
     0,
     0,
     0,

@@ -14,7 +14,9 @@ schedule(
     NightShift_Day_Worker,
     AvailableAbsencesOut,
     RotatedShiftScoresOut,
-    OvertimeShiftScoresOut
+    OvertimeShiftScoresOut,
+    NightShiftScoresOut,
+    Score
 ) :-
     workers(Workers),
     shifts(Shifts),
@@ -27,12 +29,14 @@ schedule(
     alternative_shifts(AlternativeShifts),
     incompatible_shifts(IncompatibleShifts),
     preferred_shifts(PreferredShifts),
+    preferred_night_shifts(PreferredNightShifts),
     rotated_shifts(RotatedShifts),
     known_shifts(KnownShifts),
     known_night_shifts(KnownNightShifts),
     available_absences(AvailableAbsences),
     rotated_shift_scores(RotatedShiftScores),
     overtime_shift_scores(OvertimeShiftScores),
+    night_shift_scores(NightShiftScores),
 
     schedule(
         Day_Worker_Shift,
@@ -46,6 +50,8 @@ schedule(
         AvailableAbsencesOut,
         RotatedShiftScoresOut,
         OvertimeShiftScoresOut,
+        NightShiftScoresOut,
+        Score,
         Workers,
         Shifts,
         NightShifts,
@@ -57,18 +63,21 @@ schedule(
         AlternativeShifts,
         IncompatibleShifts,
         PreferredShifts,
+        PreferredNightShifts,
         RotatedShifts,
         KnownShifts,
         KnownNightShifts,
         AvailableAbsences,
         RotatedShiftScores,
-        OvertimeShiftScores
+        OvertimeShiftScores,
+        NightShiftScores
     ).
 
 print_outputs(
     AvailableAbsences,
     RotatedShiftScores,
-    OvertimeShiftScores
+    OvertimeShiftScores,
+    NightShiftScores
 ) :-
     write('Available absences: '), 
     print_list(AvailableAbsences), nl,
@@ -77,7 +86,10 @@ print_outputs(
     print_list(RotatedShiftScores), nl,
 
     write('Overtime shift scores: '),
-    print_list(OvertimeShiftScores), nl.
+    print_list(OvertimeShiftScores), nl,
+    
+    write('Night shift scores: '),
+    print_list(NightShiftScores), nl.
 
 print_list_element(Element) :-
     is_list(Element), !,
@@ -186,6 +198,13 @@ print_worker(WorkerIndex, Workers, ColumnFormat) :-
     nth1(WorkerIndex, Workers, Worker),
     format(ColumnFormat, [Worker]).
 
+benchmark :-
+    schedule(_, _, _, _, _, _, _, _, _, _, _, _, S),
+    statistics(runtime, [Time, _]),
+    write('Execution time: '), write(Time), write(' ms'), nl,
+    write('Score: '), write(S), nl,
+    false.
+
 main :-
     schedule(
         Day_Worker_Shift, 
@@ -195,11 +214,13 @@ main :-
         NightShift_Day_Worker, 
         AvailableAbsences, 
         RotatedShiftScores, 
-        OvertimeShiftScores
+        OvertimeShiftScores,
+        NightShiftScores,
+        Score
     ), !,
     nl,
     fd_statistics, nl,
     statistics, nl,
-    print_outputs(AvailableAbsences, RotatedShiftScores, OvertimeShiftScores),
+    print_outputs(AvailableAbsences, RotatedShiftScores, OvertimeShiftScores, NightShiftScores),
     print_schedule(Day_Worker_Shift, Shift_Day_Worker, NightShift_Day_Worker).
 main :- write('Could not find solution in the given time'), nl.
