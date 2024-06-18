@@ -4,6 +4,7 @@
 :- use_module(library(codesio)).
 
 schedule(
+    Flags,
     Day_Worker_Shift,
     Day_Shift_Worker,
     Worker_Day_Shift,
@@ -39,6 +40,7 @@ schedule(
     night_shift_scores(NightShiftScores),
 
     schedule(
+        Flags,
         Day_Worker_Shift,
         Day_Shift_Worker,
         Worker_Day_Shift,
@@ -199,14 +201,22 @@ print_worker(WorkerIndex, Workers, ColumnFormat) :-
     format(ColumnFormat, [Worker]).
 
 benchmark :-
-    schedule(_, _, _, _, _, _, _, _, _, _, _, _, S),
+    flags(Flags),
+    benchmark(Flags).
+benchmark(Flags) :-
+    write('time,score'), nl,
+    append(Flags, [all], AllFlags),
+    schedule(AllFlags, _, _, _, _, _, _, _, _, _, _, _, _, S),
     statistics(runtime, [Time, _]),
-    write('Execution time: '), write(Time), write(' ms'), nl,
-    write('Score: '), write(S), nl,
+    write(Time), write(','), write(S), nl,
     false.
 
 main :-
+    flags(Flags),
+    timeout(Timeout),
+    append(Flags, [timeout(Timeout, Flag)], AllFlags),
     schedule(
+        AllFlags,
         Day_Worker_Shift, 
         _, _, 
         Shift_Day_Worker, 

@@ -5,6 +5,7 @@
 :- consult('util.pl').
 
 schedule(
+    Flags,
     Day_Worker_Shift,
     Day_Shift_Worker,
     Worker_Day_Shift,
@@ -118,13 +119,8 @@ schedule(
     append([Score], Variables, AllVariables),
 
     write('Searching...'), nl,
-    labeling([
-        time_out(60000, Flag),
-        % all,
-        maximize(Score),
-        ffc,
-        middle
-    ], AllVariables).
+    append(Flags, [maximize(Score)], AllFlags),
+    labeling(AllFlags, AllVariables).
 
 % Sets the domain of the decision variables, and initializes alternative
 % matrices using channeling constraints.

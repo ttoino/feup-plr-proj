@@ -1,3 +1,7 @@
+flags([ffc, middle]).
+
+timeout(90000).
+
 % Which workers are available
 workers([
     'Alice',
