@@ -10,6 +10,7 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{pbalance}
+\usepackage{enumitem}
 
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
@@ -58,7 +59,43 @@ scheduling, optimization, clp, pharmacy
 
 \section{Introduction}
 
+In some industries, scheduling of workers is very easy: all workers come in at the same time and they all leave at the same time.
+However, in the pharmacy industry, scheduling can become a complex task, especially for smaller pharmacies, where the number of workers is reduced and schedules are adapted to meet the preferences of the workers.
 
+A particular pharmacy in Portugal contacted us to create a scheduling system that would replace their current manual scheduling system. The new scheduling system should be faster and create better schedules when compared to the current system. In section \ref{section:problem-statement}, the criteria used to compare schedules will be specified.
+
+% A schedule is considered good if it takes into consideration workers' preferences, if it equally distributes overtime across all workers, and if night shift workers have their preferences prioritized, among other factors.
+
+\section{Problem Statement}
+\label{section:problem-statement}
+
+The problem was initially presented as a very specific set of constraints.
+After analyzing the problem, some constraints were generalized so that the system can better adapt to the pharmacy's future needs.
+
+The resulting set of constraints can be summarized as follows:
+
+\begin{enumerate}[start]
+    \item The pharmacy has 13 workers and 2 locations. 12 workers can work at the first location, but only 7 workers can work at the second location.
+    \item The first location has 7 daytime shifts and 1 nighttime shift. The second location has 2 daytime shifts.
+    \item 3 out of the 7 daytime shifts in the first location have variable length. These shifts are referred to as \textbf{variable-length shifts}.
+    \item Some shifts in the first location have longer duration, but don't give the workers overtime pay. These shifts will be referred to as \textbf{overtime shifts}. There cannot be more than 2 of these shifts each day.
+    \item Some shifts end later than others. These shifts will be referred to as \textbf{late shits}. Each worker cannot have more than 2 of these shifts each week.
+    \item If, on a given day, a worker is assigned to a nighttime shift, then they must also be assigned to a daytime shift on the same day. That shift must end before or at 19:00.
+    \item Workers cannot be assigned to shifts that are incompatible with their daily commitments. These commitments are known ahead of time and will be referred to as a worker's \textbf{shift incompatibilities}.
+    \item Weekend schedules are known ahead of time and don't need to be calculated.
+    \item Some absenses are known ahead of time. Every day, 4 workers need to be absent.
+\end{enumerate}
+
+Furthermore, certain criteria make a schedule better than others. These criteria are:
+
+\begin{enumerate}[resume]
+    \item Workers should have their preferences met. For example, if a worker prefers to come to work and leave earlier, then they should be assigned to shifts that facilitate that, if possible.
+    \item Some shifts have a "good" or "bad" reputation and, thus, each of them needs to be equally distributed among all workers. These shifts will be referred to as \textbf{rotated shifts}.
+    \item Overtime should be equally distributed among all workers.
+    \item Absenses that are not known ahead of time should be equally distributed among all workers.
+    \item If a worker is assigned to a night shift, their preferences should be prioritized in the daytime shift [CONFIRM]. Furthermore, in the following day, they should be assigned to an absense, whenever possible.
+    \item Some workers go to the gym together and, thus, prefer to have similar schedules.
+\end{enumerate}
 
 \color{red}
 \section{Ease of Use}
