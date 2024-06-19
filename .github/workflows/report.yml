@@ -9,16 +9,18 @@ jobs:
 
     steps:
         - name: Checkout repository
-          uses: actions/checkout@v2
+          uses: actions/checkout@v4
+          with:
+            sparse-checkout: report/
     
         - name: Compile report
-          uses: xu-cheng/latex-action@v3
+          uses: vinay0410/tectonic-action@v1.1.2
           with:
-            working_directory: report/
-            root_file: report.tex
+            tex_path: report/report.tex
     
         - name: Upload report
-          uses: actions/upload-artifact@v2
+          uses: actions/upload-artifact@v4
           with:
             name: report
             path: report/report.pdf
+            retention-days: 14
