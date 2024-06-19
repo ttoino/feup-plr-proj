@@ -18,9 +18,9 @@
 \begin{document}
 
 \title{
-    Conference Paper Title* \\
+    Creating Optimized Schedules for Pharmacy Workers: a CLP-based approach \\
     % {
-    %     \footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and should not be used
+    %     \footnotesize A CLP-based approach
     % }
 }
 
@@ -46,18 +46,19 @@
 
 \begin{abstract}
 
-This document is a model and instructions for \LaTeX.
-This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
-or Math in Paper Title or Abstract.
+The scheduling of workers is a common problem in many industries.
+In the pharmacy industry, scheduling is usually done by hand and heeding to the preference of individual workers becomes a complex task, even at smaller scales. Furthermore, ensuring that schedules are fair and that the workload is evenly distributed among workers is a challenging task.
+This paper presents a Constraint Logic Programming (CLP) based approach to create optimized schedules for pharmacy workers. The proposed approach uses a CLP solver to find the optimal schedule for a given set of workers. The performance of the proposed approach is evaluated using a real-world dataset of pharmacy workers. The results show that the proposed approach can create optimized schedules to meet the preferences of individual workers.
 
 \end{abstract}
 
 \begin{IEEEkeywords}
-component, formatting, style, styling, insert
+scheduling, optimization, clp, pharmacy
 \end{IEEEkeywords}
 
 \section{Introduction}
 
+\color{red}
 This document is a model and instructions for \LaTeX.
 Please observe the conference page limits. 
 
@@ -168,7 +169,7 @@ surrounding equation.
 \item There is no period after the ``et'' in the Latin abbreviation ``et al.''.
 \item The abbreviation ``i.e.'' means ``that is'', and the abbreviation ``e.g.'' means ``for example''.
 \end{itemize}
-An excellent style manual for science writers is \cite{b7}.
+An excellent style manual for science writers is \cite{report:zhu2024scalable}.
 
 \subsection{Authors and Affiliations}
 \textbf{The class file is designed for, but not limited to, six authors.} A 
@@ -248,10 +249,10 @@ acknowledgments in the unnumbered footnote on the first page.
 
 \section*{References}
 
-Please number citations consecutively within brackets \cite{b1}. The 
-sentence punctuation follows the bracket \cite{b2}. Refer simply to the reference 
-number, as in \cite{b3}---do not use ``Ref. \cite{b3}'' or ``reference \cite{b3}'' except at 
-the beginning of a sentence: ``Reference \cite{b3} was the first $\ldots$''
+Please number citations consecutively within brackets \cite{report:zhu2024scalable}. The 
+sentence punctuation follows the bracket \cite{report:zhu2024scalable}. Refer simply to the reference 
+number, as in \cite{report:zhu2024scalable}---do not use ``Ref. \cite{report:zhu2024scalable}'' or ``reference \cite{report:zhu2024scalable}'' except at 
+the beginning of a sentence: ``Reference \cite{report:zhu2024scalable} was the first $\ldots$''
 
 Number footnotes separately in superscripts. Place the actual footnote at 
 the bottom of the column in which it was cited. Do not put footnotes in the 
@@ -259,16 +260,17 @@ abstract or reference list. Use letters for table footnotes.
 
 Unless there are six authors or more give all authors' names; do not use 
 ``et al.''. Papers that have not been published, even if they have been 
-submitted for publication, should be cited as ``unpublished'' \cite{b4}. Papers 
-that have been accepted for publication should be cited as ``in press'' \cite{b5}. 
+submitted for publication, should be cited as ``unpublished'' \cite{report:zhu2024scalable}. Papers 
+that have been accepted for publication should be cited as ``in press'' \cite{report:zhu2024scalable}. 
 Capitalize only the first word in a paper title, except for proper nouns and 
 element symbols.
 
 For papers published in translation journals, please give the English 
-citation first, followed by the original foreign-language citation \cite{b6}.
+citation first, followed by the original foreign-language citation \cite{report:zhu2024scalable}.
 
 And to test, we'll do \cite{IEEEexample:bluebookstandard}. We can also cite our own references, using \cite{report:zhu2024scalable}.
 
+\color{black}
 \bibliographystyle{./IEEEtran}
 \bibliography{./IEEEabrv,./IEEEexample,./report}
 
