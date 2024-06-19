@@ -1,0 +1,13 @@
+/*
+!.gitignore
+
+# IEEE template files
+!howto/
+!IEEEtran.cls
+!IEEEtran.bst
+!IEEEabrv.bib
+!IEEEexample.bib
+
+!assets/
+!report.tex
+!report.bib
