@@ -15,6 +15,7 @@ jobs:
           uses: xu-cheng/latex-action@v3
           with:
             working_directory: report/
+            root_file: report.tex
     
         - name: Upload report
           uses: actions/upload-artifact@v2
