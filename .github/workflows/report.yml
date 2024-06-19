@@ -1,7 +1,7 @@
 on:
   push:
     branches: [ main ]
-    paths: [ report/**/* ]
+    paths: [ .github/workflows/report.yml, report/**/* ]
 
 jobs:
   report:
