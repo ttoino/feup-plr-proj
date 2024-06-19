@@ -1,17 +1,23 @@
 :- use_module(library(clpfd)).
 
-counts([], _, Count) :- Count #= 0.
-counts([Val | Vals], List, Count) :-
-    count(Val, List, #=, ThisCount),
-    counts(Vals, List, PartialCount),
-    Count #= ThisCount + PartialCount.
+count(Val, List, Count) :- count(Val, List, #=, Count).
 
-sums([], Sum) :- Sum #= 0.
-sums([List | Lists], Sum) :-
-    sum(List, #=, ThisSum),
-    sums(Lists, PartialSum),
-    Sum #= ThisSum + PartialSum.
+counts(Vals, List, Count) :-
+    ( foreach(Val, Vals),
+      foreach(ThisCount, Counts),
+      param(List) do
+        count(Val, List, ThisCount)
+    ),
+    sum(Counts, Count).
+
+sum(List, Sum) :- sum(List, #=, Sum).
+
+sums(List, Sum) :-
+    maplist(sum, List, Sums),
+    sum(Sums, Sum).
 
 eq_list(A, B) :- maplist(eq, A, B).
 
 eq(A, B) :- A #= B.
+
+dist(A, B, Dist) :- Dist #= abs(A - B).

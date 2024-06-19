@@ -1,6 +1,6 @@
 flags([ffc, middle]).
 
-timeout(90000).
+timeout(900).
 
 % Which workers are available
 workers([
