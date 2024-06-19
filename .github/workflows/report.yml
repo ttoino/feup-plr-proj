@@ -1,0 +1,23 @@
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  report:
+    name: Compile and upload report
+    runs-on: ubuntu-latest
+
+    steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
+    
+        - name: Compile report
+          uses: xu-cheng/latex-action@v3
+          with:
+            working_directory: report/
+    
+        - name: Upload report
+          uses: actions/upload-artifact@v2
+          with:
+            name: report
+            path: report/report.pdf
