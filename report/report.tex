@@ -62,7 +62,8 @@ scheduling, optimization, clp, pharmacy
 In some industries, scheduling of workers is very easy: all workers come in at the same time and they all leave at the same time.
 However, in the pharmacy industry, scheduling can become a complex task, especially for smaller pharmacies, where the number of workers is reduced and schedules are adapted to meet the preferences of the workers.
 
-A particular pharmacy in Portugal contacted us to create a scheduling system that would replace their current manual scheduling system. The new scheduling system should be faster and create better schedules when compared to the current system. In section \ref{section:problem-statement}, the criteria used to compare schedules will be specified.
+With that in mind, a pharmacy in Portugal contacted us to create a scheduling system that would replace their current manual scheduling system. The new scheduling system should be faster and create better schedules when compared to the current system.
+In section \ref{section:problem-statement}, the problem and the criteria used to compare schedules will be specified. In section \ref{section:proposed-model}, the proposed approach to model the problem will be presented, with a focus on developing an implementation for SICStus Prolog 4.7.1. In section \ref{section:results}, we will evaluate the model and discuss ways to improve its performance. In section \ref{section:further-work}, ideas for further work will be presented. Finally, in section \ref{section:conclusion}, the conclusions of this paper will be presented.
 
 \section{Problem Statement}
 \label{section:problem-statement}
@@ -96,6 +97,18 @@ Furthermore, certain criteria make a schedule better than others. These criteria
 \end{enumerate}
 
 As it can be seen, this problem presents similarities to the \textit{nurses' problem}, which is a well known problem in the scheduling literature. However, this problem has some unique constraints, such as the fact that some shifts have variable length or that a pharmacist can be assigned to a daytime shift and a nighttime shift in the same day. Furthermore, this problem also presents some optimization elements, such as the equal distribution of overtime and absenses.
+
+\section{Proposed Model}
+\label{section:proposed-model}
+
+\section{Results}
+\label{section:results}
+
+\section{Further Work}
+\label{section:further-work}
+
+\section{Conclusion}
+\label{section:conclusion}
 
 \color{red}
 \section{Ease of Use}
