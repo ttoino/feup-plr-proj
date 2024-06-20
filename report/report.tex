@@ -17,6 +17,7 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
+\def\NOIMPL#1{\underline{#1} {\color{blue}[NOT IMPLEMENTED]\color{black}}}
 \def\CONFIRM#1{\underline{#1} {\color{red}[CONFIRM]\color{black}}}
 
 \begin{document}
@@ -99,7 +100,7 @@ The resulting set of constraints can be summarized as follows:
     }
     \item {
         \label{constraint:nighttime-shift-implies-daytime-shift}
-        If, on a given day, a worker is assigned to a nighttime shift, then they must also be assigned to a daytime shift on the same day. That shift must end before or at 19:00.
+        If, on a given day, a worker is assigned to a nighttime shift, then they must also be assigned to a daytime shift on the same day. \NOIMPL{That shift must end before or at 19:00.}
     }
     \item {
         \label{constraint:shift-incompatibilities}
@@ -140,7 +141,7 @@ Furthermore, certain criteria make a schedule better than others. These criteria
     }
     \item {
         \label{criterion:worker-groups}
-        Some workers go to the gym together and, thus, prefer to have similar schedules.
+        \NOIMPL{Some workers go to the gym together and, thus, prefer to have similar schedules.}
     }
 \end{enumerate}
 
@@ -197,8 +198,12 @@ To implement this constraint, the \texttt{setup\_overtime\_shifts/3} predicate w
 
 \subsubsection*{Late shifts}
 
-To implement late shifts, as described in constraint \ref{constraint:late-shifts}, a list of indices of shifts that are considered to be late shifts is defined. This approach, combined with the one used for variable-length shifts, allows for only one of the alternative shifts to be considered a late shift, if needed. Furthermore, the total number of late shifts per week is defined.
-To implement this constraint, the \texttt{setup\_late\_shifts/3} predicate was created. In it, for each worker in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed, using the \texttt{count} constraint, to determine how many times each late shift occurs in that week. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be \CONFIRM{equal} to the weekly limit of late shifts.
+To implement late shifts, as described in constraint \ref{constraint:late-shifts}, a list of indices of shifts that are considered to be late shifts is defined. Like with the overtime shifts, this allows for only one of the alternative shifts to be considered a late shift, if needed. Furthermore, the maximum number of late shifts per week per worker is defined.
+To implement this constraint, the \texttt{setup\_late\_shifts/3} predicate was created. In it, for each worker in the \texttt{Worker\_Day\_Shift} matrix (the transposed matrix of the \texttt{Day\_Worker\_Shift} matrix), constraints are imposed, using the \texttt{count} constraint, to determine how many times each late shift occurs in that week. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be less than or equal to the weekly limit of late shifts per worker.
+
+\subsubsection*{Nighttime shift implies an early daytime shift}
+
+To implement the constraint that assigning a nighttime shift implies an assignment of an early daytime shift, as described in constraint \ref{constraint:nighttime-shift-implies-daytime-shift}, the \texttt{setup\_night\_shifts/3} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} and \texttt{Day\_Worker\_NightShift} matrices, constraints are imposed to ensure that, if a worker is assigned to a nighttime shift on a given day, then they must also be assigned to a daytime shift on the same day. This is implemented using the constraint \texttt{NightShift \#\textbackslash= 0 \#=> Shift \#\textbackslash= 0}.
 
 \section{Results}
 \label{section:results}

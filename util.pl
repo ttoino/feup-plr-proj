@@ -2,6 +2,7 @@
 
 count(Val, List, Count) :- count(Val, List, #=, Count).
 
+% counts(OvertimeShifts, Worker_Shift, DailyOvertimeShifts)
 counts(Vals, List, Count) :-
     ( foreach(Val, Vals),
       foreach(ThisCount, Counts),

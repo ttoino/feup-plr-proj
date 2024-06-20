@@ -174,8 +174,7 @@ setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
           param(Shift_Worker) do
             nth1(Shift1, Shift_Worker, Worker1),
             nth1(Shift2, Shift_Worker, Worker2),
-            Worker1 #= 0 #\/ Worker2 #= 0,
-            Worker1 #\= Worker2
+            Worker1 #= 0 #<=> Worker2 #\= 0
         )
     ).
 
