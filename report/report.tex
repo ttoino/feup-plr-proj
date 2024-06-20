@@ -9,16 +9,17 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
-\usepackage{pbalance}
-\usepackage{enumitem}
-\usepackage[htt]{hyphenat}
+\usepackage{pbalance} % for balancing the last page
+\usepackage{enumitem} % for enumerated lists that can continue numbering
+\usepackage{soul} % for underlining text with wrapping
+\usepackage[htt]{hyphenat} % for text hyphenation and wrapping
 
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
-\def\NOIMPL#1{\underline{#1} {\color{blue}[NOT IMPLEMENTED]\color{black}}}
-\def\CONFIRM#1{\underline{#1} {\color{red}[CONFIRM]\color{black}}}
+\def\NOIMPL#1{\ul{#1} {\color{blue}[NOT IMPLEMENTED]\color{black}}}
+\def\CONFIRM#1{\ul{#1} {\color{red}[CONFIRM]\color{black}}}
 
 \begin{document}
 
