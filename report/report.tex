@@ -101,6 +101,32 @@ As it can be seen, this problem presents similarities to the \textit{nurses' pro
 \section{Proposed Model}
 \label{section:proposed-model}
 
+To approach this problem, a Constraint Logic Programming (CLP) based approach was used. CLP allows for the easy modeling of constraints and the optimization of a given objective function.
+The proposed model was implemented using SICStus Prolog 4.7.1. 
+
+The model can be divided into three main parts: the data structures used, the constraints that are imposed on the data structures, and the objective function that is optimized.
+
+\subsection{Data Structures}
+
+Regarding the data structures that were used, an approach similar to the one used in the \textit{nurses' problem} was used. That is two matrices were created, using the \texttt{setup\_domain\_and\_channeling/5} predicate:
+
+\begin{itemize}
+    \item {
+        The \texttt{Day\_Worker\_Shift} matrix, where, for each day, each worker is assigned a shift. If a worker doesn't get assigned to a shift on that day, then the value assigned is 0.
+        The domain for these values is \texttt{0..S}, where \texttt{S} is the number of shifts. For each day, the constraint \texttt{all\_distinct\_except\_0} is imposed, so that a shift is not assigned to more than one worker.
+    }
+    \item {
+        The \texttt{Day\_Shift\_Worker} matrix, where, for each day, each shift is assigned a worker. If a shift doesn't get assigned to a worker on that day, then the value assigned is 0.
+        The domain for these values is \texttt{0..W}, where \texttt{W} is the number of workers. For each day, the constraint \texttt{all\_distinct\_except\_0} is imposed, so that a worker is not assigned to more than one shift.
+    }
+\end{itemize}
+
+After having these matrices set up, they need to be channeled, so that changes in one matrix are reflected in the other.
+This is done by iterating over the matrices and applying \texttt{element} and \texttt{\#<=>} constraints. Regarding the \texttt{element} constraints, they are used because the values in \texttt{Day\_Worker\_Shift} matrix correspond to indices in the \texttt{Day\_Shift\_Worker} matrix. The same is true for the values in the \texttt{Day\_Shift\_Worker} matrix and the indices in the \texttt{Day\_Worker\_Shift} matrix. The \texttt{\#<=>} constraints are used to ensure the \texttt{element} constraints are only applied when the value used as index is different from 0.
+
+Regarding the night shifts, using what was described above isn't enough, since the approach doesn't allow a worker to be assigned to a day and a night shift on the same day.
+To solve this, the night shifts have their own \texttt{Day\_Worker\_Shift} and \texttt{Day\_Shift\_Worker} matrices, named \texttt{Day\_Worker\_NightShift} and \texttt{Day\_NightShift\_Worker}, respectively.
+
 \section{Results}
 \label{section:results}
 
