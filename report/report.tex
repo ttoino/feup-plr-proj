@@ -17,6 +17,8 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
+\def\CONFIRM#1{\underline{#1} {\color{red}[CONFIRM]\color{black}}}
+
 \begin{document}
 
 \title{
@@ -75,26 +77,71 @@ After analyzing the problem, some constraints were generalized so that the syste
 The resulting set of constraints can be summarized as follows:
 
 \begin{enumerate}[start]
-    \item The pharmacy has 13 workers and 2 locations. 12 workers can work at the first location, but only 7 workers can work at the second location.
-    \item The first location has 7 daytime shifts and 1 nighttime shift. The second location has 2 daytime shifts.
-    \item 3 out of the 7 daytime shifts in the first location have variable length. These shifts are referred to as \textbf{variable-length shifts}.
-    \item Some shifts in the first location have longer duration, but don't give the workers overtime pay. These shifts will be referred to as \textbf{overtime shifts}. There cannot be more than 2 of these shifts each day.
-    \item Some shifts end later than others. These shifts will be referred to as \textbf{late shits}. Each worker cannot have more than 2 of these shifts each week.
-    \item If, on a given day, a worker is assigned to a nighttime shift, then they must also be assigned to a daytime shift on the same day. That shift must end before or at 19:00.
-    \item Workers cannot be assigned to shifts that are incompatible with their daily commitments. These commitments are known ahead of time and will be referred to as a worker's \textbf{shift incompatibilities}.
-    \item Weekend schedules are known ahead of time and don't need to be calculated.
-    \item Some absenses are known ahead of time. Every day, 4 workers need to be absent.
+    \item {
+        \label{constraint:domain}
+        The pharmacy has 13 workers and 2 locations. 12 workers can work at the first location, but only 7 workers can work at the second location.
+    }
+    \item {
+        \label{constraint:shifts}
+        The first location has 7 daytime shifts and 1 nighttime shift. The second location has 2 daytime shifts.
+    }
+    \item {
+        \label{constraint:variable-length-shifts}
+        3 out of the 7 daytime shifts in the first location have variable length. These shifts are referred to as \textbf{variable-length shifts}.
+    }
+    \item {
+        \label{constraint:overtime-shifts}
+        Some shifts in the first location have longer duration, but don't give the workers overtime pay. These shifts will be referred to as \textbf{overtime shifts}. There cannot be more than 2 of these shifts each day.
+    }
+    \item {
+        \label{constraint:late-shifts}
+        Some shifts end later than others. These shifts will be referred to as \textbf{late shits}. Each worker cannot have more than 2 of these shifts each week.
+    }
+    \item {
+        \label{constraint:nighttime-shift-implies-daytime-shift}
+        If, on a given day, a worker is assigned to a nighttime shift, then they must also be assigned to a daytime shift on the same day. That shift must end before or at 19:00.
+    }
+    \item {
+        \label{constraint:shift-incompatibilities}
+        Workers cannot be assigned to shifts that are incompatible with their daily commitments. These commitments are known ahead of time and will be referred to as a worker's \textbf{shift incompatibilities}.
+    }
+    \item {
+        \label{constraint:weekend-schedules-known-ahead-of-time}
+        Weekend schedules are known ahead of time and don't need to be calculated.
+    }
+    \item {
+        \label{constraint:absenses-known-ahead-of-time}
+        Some absenses are known ahead of time. Every day, 4 workers need to be absent.
+    }
 \end{enumerate}
 
 Furthermore, certain criteria make a schedule better than others. These criteria are:
 
 \begin{enumerate}[resume]
-    \item Workers should have their preferences met. For example, if a worker prefers to come to work and leave earlier, then they should be assigned to shifts that facilitate that, if possible.
-    \item Some shifts have a "good" or "bad" reputation and, thus, each of them needs to be equally distributed among all workers. These shifts will be referred to as \textbf{rotated shifts}.
-    \item Overtime should be equally distributed among all workers.
-    \item Absenses that are not known ahead of time should be equally distributed among all workers.
-    \item If a worker is assigned to a night shift, their preferences should be prioritized in the daytime shift [CONFIRM]. Furthermore, in the following day, they should be assigned to an absense, whenever possible.
-    \item Some workers go to the gym together and, thus, prefer to have similar schedules.
+    \item {
+        \label{criterion:worker-preferences}
+        Workers should have their preferences met. For example, if a worker prefers to come to work and leave earlier, then they should be assigned to shifts that facilitate that, if possible.
+    }
+    \item {
+        \label{criterion:rotated-shifts-distribution}
+        Some shifts have a "good" or "bad" reputation and, thus, each of them needs to be equally distributed among all workers. These shifts will be referred to as \textbf{rotated shifts}.
+    }
+    \item {
+        \label{criterion:overtime-distribution}
+        Overtime should be equally distributed among all workers.
+    }
+    \item {
+        \label{criterion:absenses-distribution}
+        Absenses that are not known ahead of time should be equally distributed among all workers.
+    }
+    \item {
+        \label{criterion:nighttime-workers-prioritzation}
+        If a worker is assigned to a night shift, \CONFIRM{their preferences should be prioritized in the daytime shift}. Furthermore, in the following day, they should be assigned to an absense, whenever possible.
+    }
+    \item {
+        \label{criterion:worker-groups}
+        Some workers go to the gym together and, thus, prefer to have similar schedules.
+    }
 \end{enumerate}
 
 As it can be seen, this problem presents similarities to the \textit{nurses' problem}, which is a well known problem in the scheduling literature. However, this problem has some unique constraints, such as the fact that some shifts have variable length or that a pharmacist can be assigned to a daytime shift and a nighttime shift in the same day. Furthermore, this problem also presents some optimization elements, such as the equal distribution of overtime and absenses.
@@ -108,6 +155,7 @@ The proposed model was implemented using SICStus Prolog 4.7.1.
 The model can be divided into three main parts: the data structures used, the constraints that are imposed on the data structures, and the objective function that is optimized.
 
 \subsection{Data Structures}
+\label{section:data-structures}
 
 Regarding the data structures that were used, an approach similar to the one used in the \textit{nurses' problem} was used. That is two matrices were created, using the \texttt{setup\_domain\_and\_channeling/5} predicate:
 
@@ -125,12 +173,32 @@ Regarding the data structures that were used, an approach similar to the one use
 After having these matrices set up, they need to be channeled, so that changes in one matrix are reflected in the other.
 This is done by iterating over the matrices and applying \texttt{element} and \texttt{\#<=>} constraints. Regarding the \texttt{element} constraints, they are used because the values in \texttt{Day\_Worker\_Shift} matrix correspond to indices in the \texttt{Day\_Shift\_Worker} matrix. The same is true for the values in the \texttt{Day\_Shift\_Worker} matrix and the indices in the \texttt{Day\_Worker\_Shift} matrix. The \texttt{\#<=>} constraints are used to ensure the \texttt{element} constraints are only applied when the value used as index is different from 0.
 
-Regarding the night shifts, using what was described above isn't enough, since the approach doesn't allow a worker to be assigned to a day and a night shift on the same day.
+Regarding the night shifts, using what was described above isn't enough, since the approach doesn't allow a worker to be assigned to a day and a night shift on the same day, as described in constraint \ref{constraint:nighttime-shift-implies-daytime-shift}.
 To solve this, the night shifts have their own \texttt{Day\_Worker\_Shift} and \texttt{Day\_Shift\_Worker} matrices, named \texttt{Day\_Worker\_NightShift} and \texttt{Day\_NightShift\_Worker}, respectively.
 
 \subsection{Constraints}
+\label{section:constraints}
 
+For each constraint that was described in section \ref{section:problem-statement}, a predicate was created to enforce it. How each predicate is implemented will be described in the following paragraphs.
 
+Regarding constraints \ref{constraint:domain} and \ref{constraint:shifts}, they already already enforced by the domain of the matrices, as described in \ref{section:data-structures}.
+
+Regarding the optimization criterion \ref{criterion:worker-groups}, it was not implemented, since it was considered to be a low priority criterion.
+
+\subsubsection*{Variable-length shifts}
+
+In order to implement variable-length shifts, as described in constraint \ref{constraint:variable-length-shifts}, the concept of alternative shifts was introduced. Alternative shifts are shifts where only of them can exist in a given day of the week. A list of pairs of indices of shifts is defined to indicate which shifts represent different lengths of the same shift.
+To implement this constraint, the \texttt{setup\_alternative\_shifts/2} predicate was created. In it, for each day in the \texttt{Day\_Shift\_Worker} matrix, two sets of constraints are imposed: the first is a constraint that states that the number of shifts that have no workers assigned to them is equal to the number of alternative shift pairs, implemented using \texttt{count}; the second is that, for each pair of alternative shifts, exactly one of them must have a worker assigned, implemented using \texttt{Worker1 \#= 0 \#<=> Worker2 \#\textbackslash= 0}.
+
+\subsubsection*{Overtime shifts}
+
+To implement overtime shifts, as described in constraint \ref{constraint:overtime-shifts}, a list of indices of shifts that are considered to be overtime shifts is defined. This approach, combined with the one used for variable-length shifts, allows for only one of the alternative shifts to be considered an overtime shift, if needed. Furthermore, the total number of overtime shifts per day is defined.
+To implement this constraint, the \texttt{setup\_overtime\_shifts/3} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed, using the \texttt{count} constraint, to determine how many times each overtime shift occurs in that day. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be \CONFIRM{equal} to the daily limit of overtime shifts.
+
+\subsubsection*{Late shifts}
+
+To implement late shifts, as described in constraint \ref{constraint:late-shifts}, a list of indices of shifts that are considered to be late shifts is defined. This approach, combined with the one used for variable-length shifts, allows for only one of the alternative shifts to be considered a late shift, if needed. Furthermore, the total number of late shifts per week is defined.
+To implement this constraint, the \texttt{setup\_late\_shifts/3} predicate was created. In it, for each worker in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed, using the \texttt{count} constraint, to determine how many times each late shift occurs in that week. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be \CONFIRM{equal} to the weekly limit of late shifts.
 
 \section{Results}
 \label{section:results}
