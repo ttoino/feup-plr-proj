@@ -11,6 +11,7 @@
 \usepackage{xcolor}
 \usepackage{pbalance}
 \usepackage{enumitem}
+\usepackage[htt]{hyphenat}
 
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
@@ -126,6 +127,10 @@ This is done by iterating over the matrices and applying \texttt{element} and \t
 
 Regarding the night shifts, using what was described above isn't enough, since the approach doesn't allow a worker to be assigned to a day and a night shift on the same day.
 To solve this, the night shifts have their own \texttt{Day\_Worker\_Shift} and \texttt{Day\_Shift\_Worker} matrices, named \texttt{Day\_Worker\_NightShift} and \texttt{Day\_NightShift\_Worker}, respectively.
+
+\subsection{Constraints}
+
+
 
 \section{Results}
 \label{section:results}
