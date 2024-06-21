@@ -503,4 +503,18 @@ Finally, the \texttt{Score} variable is maximized using the  \texttt{maximize(Sc
     \end{tikzpicture}
 \end{center}
 
+\begin{center}
+    \begin{tikzpicture}
+        \begin{semilogxaxis}[title=Score over time (before and after global constraints)]
+            \addplot[color=blue, mark=o] table {./results/old.csv};
+            \addplot[color=red, mark=o] table {./results/empty/impact-step-down-bab.csv};
+
+            \legend{
+                Before global constraints,
+                After global constraints,
+            }
+        \end{semilogxaxis}
+    \end{tikzpicture}
+\end{center}
+
 \end{document}
