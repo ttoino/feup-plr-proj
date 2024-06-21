@@ -219,8 +219,7 @@ Since weekend schedules are known ahead of time and don't need to be calculated,
 
 Some absenses schedules are known ahead of time and don't need to be calculated, as described in constraint \ref{constraint:absenses-known-ahead-of-time}. To implement this constraint, its implementation was made more general and, instead, there is support for setting any worker's schedule ahead of time (including 0 for absenses).
 This was done using \texttt{maplist(eq\_list, Worker\_Day\_Shift, KnownShifts)} for daytime shifts, which ensures that every list inside \texttt{Worker\_Day\_Shift} - that is, a worker's weekly schedule - is equal to the corresponding list inside \texttt{KnownShifts}. The same is done for nighttime shifts.
-The constraint where 4 workers need to be absent every day was not implemented, since it is implicit in the problem domain: with 13 workers and 9 daytime shifts, 4 workers will be absent every day; as for the nighttime shifts, this is also implied since a worker that works during the night must also work during the day and, therefore, must be one of the 9 on-call workers. 
-
+The constraint where 4 workers need to be absent every day was not implemented, since it is implicit in the problem domain: with 13 workers and 9 daytime shifts, 4 workers will be absent every day.
 
 \section{Results}
 \label{section:results}
