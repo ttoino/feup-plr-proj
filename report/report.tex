@@ -13,6 +13,7 @@
 \usepackage{enumitem} % for enumerated lists that can continue numbering
 \usepackage{soul} % for underlining text with wrapping
 \usepackage[htt]{hyphenat} % for text hyphenation and wrapping
+\usepackage{pgfplots} % for the plot(s)
 
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
@@ -541,5 +542,175 @@ And to test, we'll do \cite{IEEEexample:bluebookstandard}. We can also cite our 
 \color{red}
 IEEE conference templates contain guidance text for composing and formatting conference papers. Please ensure that all template text is removed from your conference paper prior to submission to the conference. Failure to remove the template text from your paper may result in your paper not being published.
 
+
+\onecolumn
+\appendix
+\section{Appendix}
+
+\tikzset{
+    % only marks,
+    const plot,
+}
+\pgfplotsset{
+    table/col sep=comma,
+    % table/x=time,
+    % table/y=score,
+    domain=0:300000,
+    width=\textwidth,
+    height=0.5\textwidth,
+    legend style={
+            cells={anchor=west},
+            anchor=north,
+            at={(0.5,-0.1)},
+            legend columns=5,
+        },
+}
+
+\begin{center}
+    \begin{tikzpicture}
+        \begin{semilogxaxis}
+            \addplot[color=red, mark=o] table {../results/empty/anti_first_fail-step-down-bab.csv};
+            \addplot[color=red, mark=square] table {../results/empty/anti_first_fail-step-median-bab.csv};
+            \addplot[color=red, mark=diamond] table {../results/empty/anti_first_fail-step-middle-bab.csv};
+            % \addplot[color=red, mark=triangle] table {../results/empty/anti_first_fail-step-up-bab.csv};
+
+            \addplot[color=green, mark=o] table {../results/empty/dom_w_deg-step-down-bab.csv};
+            \addplot[color=green, mark=square] table {../results/empty/dom_w_deg-step-median-bab.csv};
+            \addplot[color=green, mark=diamond] table {../results/empty/dom_w_deg-step-middle-bab.csv};
+            \addplot[color=green, mark=triangle] table {../results/empty/dom_w_deg-step-up-bab.csv};
+
+            % \addplot[color=blue, mark=o] table {../results/empty/first_fail-step-down-bab.csv};
+            % \addplot[color=blue, mark=square] table {../results/empty/first_fail-step-median-bab.csv};
+            \addplot[color=blue, mark=diamond] table {../results/empty/first_fail-step-middle-bab.csv};
+            % \addplot[color=blue, mark=triangle] table {../results/empty/first_fail-step-up-bab.csv};
+
+            \addplot[color=cyan, mark=o] table {../results/empty/impact-step-down-bab.csv};
+            \addplot[color=cyan, mark=square] table {../results/empty/impact-step-median-bab.csv};
+            \addplot[color=cyan, mark=diamond] table {../results/empty/impact-step-middle-bab.csv};
+            \addplot[color=cyan, mark=triangle] table {../results/empty/impact-step-up-bab.csv};
+
+            \addplot[color=magenta, mark=o] table {../results/empty/largest-step-down-bab.csv};
+            \addplot[color=magenta, mark=square] table {../results/empty/largest-step-median-bab.csv};
+            \addplot[color=magenta, mark=diamond] table {../results/empty/largest-step-middle-bab.csv};
+            % \addplot[color=magenta, mark=triangle] table {../results/empty/largest-step-up-bab.csv};
+
+            \addplot[color=yellow, mark=o] table {../results/empty/leftmost-step-down-bab.csv};
+            \addplot[color=yellow, mark=square] table {../results/empty/leftmost-step-median-bab.csv};
+            \addplot[color=yellow, mark=diamond] table {../results/empty/leftmost-step-middle-bab.csv};
+            \addplot[color=yellow, mark=triangle] table {../results/empty/leftmost-step-up-bab.csv};
+
+            \addplot[color=brown, mark=o] table {../results/empty/max_regret-step-down-bab.csv};
+            \addplot[color=brown, mark=square] table {../results/empty/max_regret-step-median-bab.csv};
+            \addplot[color=brown, mark=diamond] table {../results/empty/max_regret-step-middle-bab.csv};
+            \addplot[color=brown, mark=triangle] table {../results/empty/max_regret-step-up-bab.csv};
+
+            % \addplot[color=orange, mark=o] table {../results/empty/most_constrained-step-down-bab.csv};
+            % \addplot[color=orange, mark=square] table {../results/empty/most_constrained-step-median-bab.csv};
+            \addplot[color=orange, mark=diamond] table {../results/empty/most_constrained-step-middle-bab.csv};
+            % \addplot[color=orange, mark=triangle] table {../results/empty/most_constrained-step-up-bab.csv};
+
+            % \addplot[color=teal, mark=o] table {../results/empty/occurrence-step-down-bab.csv};
+            % \addplot[color=teal, mark=square] table {../results/empty/occurrence-step-median-bab.csv};
+            \addplot[color=teal, mark=diamond] table {../results/empty/occurrence-step-middle-bab.csv};
+            \addplot[color=teal, mark=triangle] table {../results/empty/occurrence-step-up-bab.csv};
+
+            \addplot[color=violet, mark=o] table {../results/empty/smallest-step-down-bab.csv};
+            \addplot[color=violet, mark=square] table {../results/empty/smallest-step-median-bab.csv};
+            \addplot[color=violet, mark=diamond] table {../results/empty/smallest-step-middle-bab.csv};
+            % \addplot[color=violet, mark=triangle] table {../results/empty/smallest-step-up-bab.csv};
+        \end{semilogxaxis}
+    \end{tikzpicture}
+\end{center}
+
+\begin{center}
+    \begin{tikzpicture}
+        \begin{semilogxaxis}
+            \addlegendimage{color=white, only marks}
+            \addplot[color=red, mark=o] table {../results/known/anti_first_fail-step-down-bab.csv};
+            % \addplot[color=red, mark=square] table {../results/known/anti_first_fail-step-median-bab.csv};
+            \addlegendimage{color=red, mark=square}
+            \addplot[color=red, mark=diamond] table {../results/known/anti_first_fail-step-middle-bab.csv};
+            % \addplot[color=red, mark=triangle] table {../results/known/anti_first_fail-step-up-bab.csv};
+            \addlegendimage{color=red, mark=triangle}
+
+            \addlegendimage{color=white, only marks}
+            \addplot[color=green, mark=o] table {../results/known/dom_w_deg-step-down-bab.csv};
+            \addplot[color=green, mark=square] table {../results/known/dom_w_deg-step-median-bab.csv};
+            \addplot[color=green, mark=diamond] table {../results/known/dom_w_deg-step-middle-bab.csv};
+            \addplot[color=green, mark=triangle] table {../results/known/dom_w_deg-step-up-bab.csv};
+
+            \addlegendimage{color=white, only marks}
+            % \addplot[color=blue, mark=o] table {../results/known/first_fail-step-down-bab.csv};
+            \addlegendimage{color=blue, mark=o}
+            \addplot[color=blue, mark=square] table {../results/known/first_fail-step-median-bab.csv};
+            \addplot[color=blue, mark=diamond] table {../results/known/first_fail-step-middle-bab.csv};
+            % \addplot[color=blue, mark=triangle] table {../results/known/first_fail-step-up-bab.csv};
+            \addlegendimage{color=blue, mark=triangle}
+
+            \addlegendimage{color=white, only marks}
+            \addplot[color=cyan, mark=o] table {../results/known/impact-step-down-bab.csv};
+            \addplot[color=cyan, mark=square] table {../results/known/impact-step-median-bab.csv};
+            \addplot[color=cyan, mark=diamond] table {../results/known/impact-step-middle-bab.csv};
+            \addplot[color=cyan, mark=triangle] table {../results/known/impact-step-up-bab.csv};
+
+            \addlegendimage{color=white, only marks}
+            \addplot[color=magenta, mark=o] table {../results/known/largest-step-down-bab.csv};
+            \addplot[color=magenta, mark=square] table {../results/known/largest-step-median-bab.csv};
+            \addplot[color=magenta, mark=diamond] table {../results/known/largest-step-middle-bab.csv};
+            % \addplot[color=magenta, mark=triangle] table {../results/known/largest-step-up-bab.csv};
+            \addlegendimage{color=magenta, mark=triangle}
+
+            \addlegendimage{color=white, only marks}
+            \addplot[color=yellow, mark=o] table {../results/known/leftmost-step-down-bab.csv};
+            \addplot[color=yellow, mark=square] table {../results/known/leftmost-step-median-bab.csv};
+            \addplot[color=yellow, mark=diamond] table {../results/known/leftmost-step-middle-bab.csv};
+            \addplot[color=yellow, mark=triangle] table {../results/known/leftmost-step-up-bab.csv};
+
+            \addlegendimage{color=white, only marks}
+            \addplot[color=brown, mark=o] table {../results/known/max_regret-step-down-bab.csv};
+            \addplot[color=brown, mark=square] table {../results/known/max_regret-step-median-bab.csv};
+            \addplot[color=brown, mark=diamond] table {../results/known/max_regret-step-middle-bab.csv};
+            % \addplot[color=brown, mark=triangle] table {../results/known/max_regret-step-up-bab.csv};
+            \addlegendimage{color=brown, mark=triangle}
+
+            \addlegendimage{color=white, only marks}
+            % \addplot[color=orange, mark=o] table {../results/known/most_constrained-step-down-bab.csv};
+            \addlegendimage{color=orange, mark=o}
+            \addplot[color=orange, mark=square] table {../results/known/most_constrained-step-median-bab.csv};
+            \addplot[color=orange, mark=diamond] table {../results/known/most_constrained-step-middle-bab.csv};
+            % \addplot[color=orange, mark=triangle] table {../results/known/most_constrained-step-up-bab.csv};
+            \addlegendimage{color=orange, mark=triangle}
+
+            \addlegendimage{color=white, only marks}
+            % \addplot[color=teal, mark=o] table {../results/known/occurrence-step-down-bab.csv};
+            \addlegendimage{color=teal, mark=o}
+            % \addplot[color=teal, mark=square] table {../results/known/occurrence-step-median-bab.csv};
+            \addlegendimage{color=teal, mark=square}
+            \addplot[color=teal, mark=diamond] table {../results/known/occurrence-step-middle-bab.csv};
+            % \addplot[color=teal, mark=triangle] table {../results/known/occurrence-step-up-bab.csv};
+            \addlegendimage{color=teal, mark=triangle}
+
+            \addlegendimage{color=white, only marks}
+            \addplot[color=violet, mark=o] table {../results/known/smallest-step-down-bab.csv};
+            \addplot[color=violet, mark=square] table {../results/known/smallest-step-median-bab.csv};
+            \addplot[color=violet, mark=diamond] table {../results/known/smallest-step-middle-bab.csv};
+            % \addplot[color=violet, mark=triangle] table {../results/known/smallest-step-up-bab.csv};
+            \addlegendimage{color=violet, mark=triangle}
+
+            \legend{
+                anti\_first\_fail:, down, median, middle, up,
+                dom\_w\_deg:, down, median, middle, up,
+                first\_fail:, down, median, middle, up,
+                impact:, down, median, middle, up,
+                largest:, down, median, middle, up,
+                leftmost:, down, median, middle, up,
+                max\_regret:, down, median, middle, up,
+                most\_constrained:, down, median, middle, up,
+                occurrence:, down, median, middle, up,
+                smallest:, down, median, middle, up,
+            }
+        \end{semilogxaxis}
+    \end{tikzpicture}
+\end{center}
 
 \end{document}
