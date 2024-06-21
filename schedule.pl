@@ -70,7 +70,8 @@ schedule(
 
     setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift),
 
-    setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts),
+    %setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts),
+    setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts),
 
     ( foreach(NightShift_Worker, Day_NightShift_Worker) do
         count(0, NightShift_Worker, 0)
@@ -221,17 +222,28 @@ setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift) :-
 
 % Forces workers that have a late shift assigned to not have a night shift
 % assigned
-setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
-    ( foreach(Shift_Worker, Day_Shift_Worker), 
+%setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
+setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts) :-
+    list_to_fdset(LateShifts, LateShiftsSet),
+    ( foreach(Worker_Shift, Day_Worker_Shift), 
       foreach(Worker_NightShift, Day_Worker_NightShift), 
-      param(LateShifts) do
-        ( foreach(LateShift, LateShifts), 
-          param(Shift_Worker), 
-          param(Worker_NightShift) do
-            nth1(LateShift, Shift_Worker, Worker),
-            (Worker #\= 0) #=> (element(Worker, Worker_NightShift, 0))
+      param(LateShiftsSet) do
+        ( foreach(Shift, Worker_Shift), 
+          foreach(NightShift, Worker_NightShift), 
+          param(LateShiftsSet) do
+            (NightShift #\= 0) #=> (#\ (Shift in_set LateShiftsSet))
         )
     ).
+    % ( foreach(Shift_Worker, Day_Shift_Worker), 
+    %   foreach(Worker_NightShift, Day_Worker_NightShift), 
+    %   param(LateShifts) do
+    %     ( foreach(LateShift, LateShifts), 
+    %       param(Shift_Worker), 
+    %       param(Worker_NightShift) do
+    %         nth1(LateShift, Shift_Worker, Worker),
+    %         (Worker #\= 0) #=> (element(Worker, Worker_NightShift, 0))
+    %     )
+    % ).
 
 calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores) :-
     maplist(counts, PreferredShifts, Worker_Day_Shift, PreferenceScores).

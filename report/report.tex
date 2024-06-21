@@ -101,7 +101,7 @@ The resulting set of constraints can be summarized as follows:
     }
     \item {
         \label{constraint:nighttime-shift-implies-daytime-shift}
-        If, on a given day, a worker is assigned to a nighttime shift, then they must also be assigned to a daytime shift on the same day. \NOIMPL{That shift must end before or at 19:00.}
+        If, on a given day, a worker is assigned to a nighttime shift, then they must also be assigned to a daytime shift on the same day. That shift must end before or at 19:00.
     }
     \item {
         \label{constraint:shift-incompatibilities}
@@ -204,7 +204,12 @@ To implement this constraint, the \texttt{setup\_late\_shifts/3} predicate was c
 
 \subsubsection*{Nighttime shift implies an early daytime shift}
 
-To implement the constraint that assigning a nighttime shift implies an assignment of an early daytime shift, as described in constraint \ref{constraint:nighttime-shift-implies-daytime-shift}, the \texttt{setup\_night\_shifts/3} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} and \texttt{Day\_Worker\_NightShift} matrices, constraints are imposed to ensure that, if a worker is assigned to a nighttime shift on a given day, then they must also be assigned to a daytime shift on the same day. This is implemented using the constraint \texttt{NightShift \#\textbackslash= 0 \#=> Shift \#\textbackslash= 0}.
+To implement the constraint that assigning a nighttime shift implies an assignment of an daytime shift, as described in constraint \ref{constraint:nighttime-shift-implies-daytime-shift}, the \texttt{setup\_night\_shifts/2} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} and \texttt{Day\_Worker\_NightShift} matrices, constraints are imposed to ensure that, if a worker is assigned to a nighttime shift on a given day, then they must also be assigned to a daytime shift on the same day. This is implemented using the constraint \texttt{NightShift \#\textbackslash= 0 \#=> Shift \#\textbackslash= 0}. To ensure that the assigned daytime shift is an early shift, as described in the previously mentioned constraint, the \texttt{setup\_late\_night\_shifts/3} predicate was implemented. In it, for each day in the \texttt{Day\_Shift\_Worker} and \texttt{Day\_Worker\_NightShift} matrices, all late shifts are iterated over and, if a worker is assigned to a late shift during the day, then their nighttime shift is set to 0, using the \texttt{element} constraint.
+
+\subsubsection*{Shift incompatibilities}
+
+To implement shift incompatibilities, as described in constraint \ref{constraint:shift-incompatibilities}, a list of shift incompatibilities is defined. This list contains pairs of indices of shifts that are incompatible with each other. For each worker, a list of indices of shifts that are incompatible with their daily commitments is defined. This list is then used to impose constraints on the \texttt{Day\_Worker\_Shift} matrix.
+To implement this constraint, the \texttt{setup\_shift\_incompatibilities/2} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed to ensure that a worker is not assigned to shifts that are incompatible with their daily commitments. This is implemented using the \texttt{element} constraint.
 
 \section{Results}
 \label{section:results}
