@@ -262,7 +262,7 @@ Some of the criteria specified below rely on a predicate called \texttt{score\_d
 
 \constraint {
     \subsubsection*{Prioritization of nighttime workers}
-    To prioritize the preferences of workers assigned to night shifts, as described in criterion \ref{criterion:nighttime-workers-prioritzation}, the \texttt{calculate\_priority\_preference\_scores/4} predicate was implemented. This predicate, for each worker in the \texttt{Worker\_Day\_Shift} matrix, counts how many times they are assigned to nighttime shifts and a preferred daytime shift on the same day. This is implemented using the \texttt{(NightShift \#\textbackslash= 0) \#/\textbackslash element(\_, PreferredShift, Shift)} predicate.
+    To prioritize the preferences of workers assigned to night shifts, as described in criterion \ref{criterion:nighttime-workers-prioritzation}, the \texttt{calculate\_priority\_preference\_scores/4} predicate was implemented. This predicate, for each worker in the \texttt{Worker\_Day\_Shift} matrix, counts how many times they are assigned to nighttime shifts and a preferred daytime shift on the same day. This is implemented using the \texttt{(NightShift \#\textbackslash= 0) \#/\textbackslash\ element(\_, PreferredShift, Shift)} predicate.
 }
 
 \constraint {
@@ -333,7 +333,7 @@ Regarding the "known" input, most strategies were initially able to generate goo
 
 Another interesting observation is that, while performing these experiments, it was noticed that many of the search strategies were not producing any results. It was then noticed that putting the \texttt{Score} variable at the end of the search variables list produced much better results. This is likely because the \texttt{Score} variable is not very relevant for assigning schedules, but rather for evaluating them. As such, it is better to have it at the end of the search variables list.
 
-Finally, the \texttt{enum} option is not presented in the comparison, because results were very similar to the \texttt{step} search option. The \texttt{bisect} option was also not presented, because its performance was significantly worse than the other options.
+Finally, the \texttt{enum} option is not presented in the comparison, because results were very similar to the \texttt{step} search option. The \texttt{bisect} and \texttt{restart} options were also not presented, because their performance was significantly worse than the other options.
 
 \subsection{Global Constraints Comparison}
 
