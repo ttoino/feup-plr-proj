@@ -75,7 +75,7 @@ In some industries, scheduling of workers is very easy: all workers come in at t
 However, in the pharmacy industry, scheduling can become a complex task, especially for smaller pharmacies, where the number of workers is reduced and schedules are adapted to meet the preferences of the workers.
 
 With that in mind, a pharmacy in Portugal contacted us to create a scheduling system that would replace their current manual scheduling system. The new scheduling system should be faster and create better schedules when compared to the current system.
-In section \ref{section:problem-statement}, the problem and the criteria used to compare schedules will be specified. In section \ref{section:proposed-model}, the proposed approach to model the problem will be presented, with a focus on developing an implementation for SICStus Prolog 4.7.1. In section \ref{section:results}, we will evaluate the model and discuss ways to improve its performance. In section \ref{section:further-work}, ideas for further work will be presented. Finally, in section \ref{section:conclusion}, the conclusions of this paper will be presented.
+In section \ref{section:problem-statement}, the problem and the criteria used to compare schedules will be specified. In section \ref{section:proposed-model}, the proposed approach to model the problem will be presented, with a focus on developing an implementation for SICStus Prolog 4.8.0. In section \ref{section:results}, we will evaluate the model and discuss ways to improve its performance. In section \ref{section:further-work}, ideas for further work will be presented. Finally, in section \ref{section:conclusion}, the conclusions of this paper will be presented.
 
 \section{Problem Statement}
 \label{section:problem-statement}
@@ -329,59 +329,11 @@ Finally, the \texttt{Score} variable is maximized using the  \texttt{maximize(Sc
 \section{Conclusion}
 \label{section:conclusion}
 
-
-\color{red}
-\subsection{Figures and Tables}
-\paragraph{Positioning Figures and Tables} Place figures and tables at the top and 
-bottom of columns. Avoid placing them in the middle of columns. Large 
-figures and tables may span across both columns. Figure captions should be 
-below the figures; table heads should appear above the tables. Insert 
-figures and tables after they are cited in the text. Use the abbreviation 
-% ``Fig.~\ref{fig}'', even at the beginning of a sentence.
-
-\begin{table}[htbp]
-\caption{Table Type Styles}
-\begin{center}
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{Table}&\multicolumn{3}{|c|}{\textbf{Table Column Head}} \\
-\cline{2-4} 
-\textbf{Head} & \textbf{\textit{Table column subhead}}& \textbf{\textit{Subhead}}& \textbf{\textit{Subhead}} \\
-\hline
-copy& More table copy$^{\mathrm{a}}$& &  \\
-\hline
-\multicolumn{4}{l}{$^{\mathrm{a}}$Sample of a Table footnote.}
-\end{tabular}
-\label{tab1}
-\end{center}
-\end{table}
-
-\begin{figure}[htbp]
-\centerline{\includegraphics{assets/fig1.png}}
-\caption{Example of a figure caption.}
-\label{fig}
-\end{figure}
-
-Figure Labels: Use 8 point Times New Roman for Figure labels. Use words 
-rather than symbols or abbreviations when writing Figure axis labels to 
-avoid confusing the reader. As an example, write the quantity 
-``Magnetization'', or ``Magnetization, M'', not just ``M''. If including 
-units in the label, present them within parentheses. Do not label axes only 
-with units. In the example, write ``Magnetization (A/m)'' or ``Magnetization 
-\{A[m(1)]\}'', not just ``A/m''. Do not label axes with a ratio of 
-quantities and units. For example, write ``Temperature (K)'', not 
-``Temperature/K''.
-
-\color{black}
-
 % \bibliographystyle{./IEEEtran}
 % \bibliography{./IEEEabrv,./IEEEexample,./report}
 
-\vspace{12pt}
-
 \onecolumn
 \appendix
-% \section{Appendix}
 
 \tikzset{
     % only marks,
