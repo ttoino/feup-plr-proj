@@ -390,19 +390,21 @@ quantities and units. For example, write ``Temperature (K)'', not
     % table/x=time,
     % table/y=score,
     domain=0:300000,
+    xlabel=Time (ms),
+    ylabel=Score,
     width=\textwidth,
-    height=0.5\textwidth,
+    height=0.49\textwidth,
     legend style={
             cells={anchor=west},
             anchor=north,
-            at={(0.5,-0.1)},
+            at={(0.5,-0.16)},
             legend columns=5,
         },
 }
 
 \begin{center}
     \begin{tikzpicture}
-        \begin{semilogxaxis}
+        \begin{semilogxaxis}[title=Score over time (empty input)]
             \addplot[color=red, mark=o] table {../results/empty/anti_first_fail-step-down-bab.csv};
             \addplot[color=red, mark=square] table {../results/empty/anti_first_fail-step-median-bab.csv};
             \addplot[color=red, mark=diamond] table {../results/empty/anti_first_fail-step-middle-bab.csv};
@@ -458,7 +460,7 @@ quantities and units. For example, write ``Temperature (K)'', not
 
 \begin{center}
     \begin{tikzpicture}
-        \begin{semilogxaxis}
+        \begin{semilogxaxis}[title=Score over time (known absences and night shifts)]
             \addlegendimage{color=white, only marks}
             \addplot[color=red, mark=o] table {../results/known/anti_first_fail-step-down-bab.csv};
             % \addplot[color=red, mark=square] table {../results/known/anti_first_fail-step-median-bab.csv};
