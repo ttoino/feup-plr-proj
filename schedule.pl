@@ -118,7 +118,7 @@ schedule(
     %setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts),
     setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts),
 
-    % MISSING IN REPORT
+    % Ensure every night shift is assigned
     ( foreach(NightShift_Worker, Day_NightShift_Worker) do
         count(0, NightShift_Worker, 0)
     ),

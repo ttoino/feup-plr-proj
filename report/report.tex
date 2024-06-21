@@ -153,7 +153,7 @@ Furthermore, certain criteria make a schedule better than others. These criteria
     }
     \item {
         \label{criterion:worker-groups}
-        \NOIMPL{Some workers go to the gym together and, thus, prefer to have similar schedules.}
+        Some workers go to the gym together and, thus, prefer to have similar schedules.
     }
 \end{enumerate}
 
@@ -250,6 +250,8 @@ In addition to the constraints, several optimization criteria were implemented t
 
 Regarding the optimization criterion \ref{criterion:worker-groups}, it was not implemented, since it was considered to be a low priority criterion.
 
+Some of the criteria specified below rely on a predicate called \texttt{score\_distances/2}. This predicate calculates the sum of absolute differences between all pairs of scores in the provided list, providing a measure of how evenly distributed a given score is among workers.
+
 \constraint {
     \subsubsection*{Worker preferences}
     To implement worker preferences, as described in criterion \ref{criterion:worker-preferences}, two lists of preferred shifts are defined: one for daytime shifts and another for nighttime shifts. These lists contain, for each worker, a list with the indices of their preferred shifts.
@@ -262,50 +264,55 @@ Regarding the optimization criterion \ref{criterion:worker-groups}, it was not i
 }
 
 \constraint {
+    \subsubsection*{Distribution of night shifts}
+    To ensure an equal distribution of night shifts over multiple weeks, as described in criterion \ref{criterion:night-shifts-distribution}, a list with the previous night shift score for every worker is provided, that is, how many times they were assigned to a night shift in previous weeks.
+    To implement this criterion, the \texttt{calculate\_night\_shift\_scores/3} predicate was implemented. In it, for each worker in the \texttt{Worker\_Day\_NightShift} matrix, their night shift score is incremented by 1 if they are assigned to a night shift, using the \texttt{Out \#= In + (NightShift \#\textbackslash= 0)} constraint, where \texttt{Out} and \texttt{In} are accumulators in a \texttt{fromto} iterator. In the end, the new night shift scores are returned by the predicate. \texttt{score\_distances/2} is used to calculate a measure of how balanced the values in the list are. The resulting value is then used as a score for the night shift distribution.
+}
+
+\constraint {
     \subsubsection*{Distribution of rotated shifts}
     To ensure an equal distribution of rotated shifts over multiple weeks, as described in criterion \ref{criterion:rotated-shifts-distribution}, a list with the previous rotated shift score for every worker and rotated shift is provided, that is, how many times they were assigned to that rotated shift in previous weeks. 
-    To implement this criterion, the \texttt{calculate\_rotated\_shift\_scores/4} predicate was created. In it, for each worker in the \texttt{Worker\_Day\_Shift} matrix, and for each rotated shift, the number of times they are assigned to that rotated shift is determined, using the \texttt{count} constraint. This value is then added to that worker's previous rotated shift score to determine the new rotated shift score, for that shift. In the end, these new rotated shift scores are returned by the predicate.
+    To implement this criterion, the \texttt{calculate\_rotated\_shift\_scores/4} predicate was created. In it, for each worker in the \texttt{Worker\_Day\_Shift} matrix, and for each rotated shift, the number of times they are assigned to that rotated shift is determined, using the \texttt{count} constraint. This value is then added to that worker's previous rotated shift score to determine the new rotated shift score, for that shift. In the end, these new rotated shift scores are returned by the predicate. \texttt{score\_distances/2} is used to calculate a measure of how balanced the values in the matrix are. The resulting value is then used as a score for the rotated shifts distribution.
 }
 
 
 \constraint {
     \subsubsection*{Overtime distribution}
     To distribute overtime equally among workers over multiple weeks, as described in criterion \ref{criterion:overtime-distribution}, a list with the previous overtime shift score for every worker is provided, that is, how many times they were assigned to an overtime shift in previous weeks. 
-    To implement this criterion, the \texttt{calculate\_overtime\_shift\_scores/4} predicate was implemented. In it, a procedure similar to the one used for rotated shift distribution is used, with the simplification that the counts for all overtime shifts are aggregated into a single count. The new overtime shift scores are returned by the predicate.
+    To implement this criterion, the \texttt{calculate\_overtime\_shift\_scores/4} predicate was implemented. In it, a procedure similar to the one used for rotated shift distribution is used, with the simplification that the counts for all overtime shifts are aggregated into a single count. The new overtime shift scores are returned by the predicate. \texttt{score\_distances/2} is used here as well to calculate a measure of how balanced the values in the list are. The resulting value is then used as a score for the overtime distribution.
 }
 
 \constraint {
     \subsubsection*{Absences distribution}
     To distribute absences equally among workers over multiple weeks, as described in criterion \ref{criterion:absences-distribution}, a list with the previous available absences for every worker is provided, that is, how many absences they can take in the following weeks.
-    To implement this criterion, the \texttt{calculate\_absences/3} predicate was implemented. In it, a procedure similar to the one used for rotated shift and overtime shift distributions is used, with the difference that the absences taken by the worker are subtracted from their previous available absences. The new available absences is constrained to be greater than or equal to 0. The new available absences are returned by the predicate.
+    To implement this criterion, the \texttt{calculate\_absences/3} predicate was implemented. In it, a procedure similar to the one used for rotated shift and overtime shift distributions is used, with the difference that the absences taken by the worker are subtracted from their previous available absences. The new available absences is constrained to be greater than or equal to 0. The new available absences are returned by the predicate and passed on to \texttt{score\_distances/2} to calculate a measure of how balanced the values in the list are. The resulting value is then used as a score for the absences distribution.
 }
 
 \subsection{Objective Function}
 \label{section:objective-function}
 
-The objective function combines all the optimization criteria into a single score that represents the quality of the generated schedule. This score is calculated using the \texttt{Score} variable in the main \texttt{schedule/20} predicate.
-The objective function is divided into two main components:
+The objective function combines all the optimization criteria specified in section \ref{section:optimization-criteria} into a single score that represents the quality of the generated schedule. This score is calculated using the \texttt{Score} variable.
 
-A maximization component (\texttt{MaxiScore}), which includes:
-
-\begin{itemize}
-    \item Preference scores for daytime and nighttime shifts
-    \item Priority preference scores for nighttime workers
-\end{itemize}
-
-A minimization component (\texttt{MiniScore}), which includes:
+The objective function is divided into two main components.
+The first is a maximization component (\texttt{MaxiScore}), which includes scores for:
 
 \begin{itemize}
-    \item Scores for the distribution of available absences
-    \item Scores for the distribution of rotated shifts
-    \item Scores for the distribution of overtime shifts
-    \item Scores for the distribution of night shifts
+    \item Worker preferences
+    \item Prioritization of nighttime workers
 \end{itemize}
 
-The final score is calculated as the difference between the maximization and minimization components: \texttt{Score \#= MaxiScore - MiniScore}.
-To evaluate the fairness of distributions (for absences, rotated shifts, overtime shifts, and night shifts), the \texttt{score\_distances/2} predicate is used. This predicate calculates the sum of absolute differences between all pairs of scores, providing a measure of how evenly distributed these aspects are among workers.
-The objective function aims to maximize worker preferences and priority preferences while minimizing the differences in the distribution of absences, rotated shifts, overtime shifts, and night shifts. This balanced approach ensures that the generated schedule not only meets workers' preferences but also maintains fairness in the distribution of various shift types and workloads.
-The final schedule is obtained using the \texttt{labeling/2} predicate with the \texttt{maximize(Score)} option, which searches for a solution that maximizes the calculated score, thus producing the best possible schedule according to the defined criteria and constraints.
+The second is a minimization component (\texttt{MiniScore}), which includes scores for:
+
+\begin{itemize}
+    \item Absences distribution 
+    \item Rotated shifts distribution
+    \item Overtime distribution
+    \item Night shifts distribution
+\end{itemize}
+
+The final score is calculated as the difference between the maximization and minimization components: \texttt{Score \#= MaxiScore - MiniScore}. The objective function aims to maximize worker preferences and priority preferences while minimizing the differences in the distribution of absences, rotated shifts, overtime shifts, and night shifts. This balanced approach ensures that the generated schedule not only meets workers' preferences but also maintains fairness in the distribution of various shift types and workloads.
+
+Finally, the \texttt{Score} variable is maximized using the  \texttt{maximize(Score)} search option, ensuring that the generated schedules have good quality according to the defined criteria and constraints.
 
 \section{Results}
 \label{section:results}
