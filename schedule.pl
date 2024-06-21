@@ -66,6 +66,7 @@ schedule(
 
     setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts),
 
+    % MISSING IN REPORT
     setup_rotated_shifts(Shift_Day_Worker, RotatedShifts),
 
     setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift),
@@ -73,6 +74,7 @@ schedule(
     %setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts),
     setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts),
 
+    % MISSING IN REPORT
     ( foreach(NightShift_Worker, Day_NightShift_Worker) do
         count(0, NightShift_Worker, 0)
     ),
