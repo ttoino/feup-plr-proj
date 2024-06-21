@@ -277,7 +277,7 @@ Regarding the optimization criterion \ref{criterion:worker-groups}, it was not i
 \constraint {
     \subsubsection*{Absences distribution}
     To distribute absences equally among workers over multiple weeks, as described in criterion \ref{criterion:absences-distribution}, a list with the previous available absences for every worker is provided, that is, how many absences they can take in the following weeks.
-    To implement this criterion, the \texttt{calculate\_absences/3} predicate was implemented. In it, a procedure similar to the one used for rotated shift and overtime shift distributions is used, with the difference that the absences taken by the worker are subtracted from their previous available absences. The new available absences is constrained to be greater than 0. The new available absences are returned by the predicate.
+    To implement this criterion, the \texttt{calculate\_absences/3} predicate was implemented. In it, a procedure similar to the one used for rotated shift and overtime shift distributions is used, with the difference that the absences taken by the worker are subtracted from their previous available absences. The new available absences is constrained to be greater than or equal to 0. The new available absences are returned by the predicate.
 }
 
 \subsection{Objective Function}
