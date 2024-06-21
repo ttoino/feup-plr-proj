@@ -1,8 +1,0 @@
-leftmost-step-up-bab
-leftmost-step-middle-bab
-ffc-step-up-bab
-ffc-step-down-bab
-ffc-bisect-up-bab
-ffc-bisect-down-bab
-ffc-bisect-middle-bab
-impact-step-middle-bab

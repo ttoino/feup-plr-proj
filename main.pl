@@ -285,12 +285,15 @@ benchmark :-
     flags(Flags),
     benchmark(Flags).
 benchmark(Flags) :-
-    write('time,score'), nl,
+    write('time,score'), nl, flush_output,
     append(Flags, [all], AllFlags),
     schedule(AllFlags, _, _, _, _, _, _, _, _, _, _, _, _, S),
     statistics(runtime, [Time, _]),
     write(Time), write(','), write(S), nl, flush_output,
     false.
+benchmark(_) :-
+    statistics(runtime, [Time, _]),
+    write('Time to optimality: '), write(Time), nl, flush_output.
 
 % main
 % 
