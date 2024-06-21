@@ -93,7 +93,7 @@ The resulting set of constraints can be summarized as follows:
     }
     \item {
         \label{constraint:overtime-shifts}
-        Some shifts in the first location have longer duration, but don't give the workers overtime pay. These shifts will be referred to as \textbf{overtime shifts}. There cannot be more than 2 of these shifts each day.
+        Some shifts in the first location have longer duration, but don't give the workers overtime pay. These shifts will be referred to as \textbf{overtime shifts}. There must be 2 of these shifts each day.
     }
     \item {
         \label{constraint:late-shifts}
@@ -195,7 +195,7 @@ To implement this constraint, the \texttt{setup\_alternative\_shifts/2} predicat
 \subsubsection*{Overtime shifts}
 
 To implement overtime shifts, as described in constraint \ref{constraint:overtime-shifts}, a list of indices of shifts that are considered to be overtime shifts is defined. This approach, combined with the one used for variable-length shifts, allows for only one of the alternative shifts to be considered an overtime shift, if needed. Furthermore, the total number of overtime shifts per day is defined.
-To implement this constraint, the \texttt{setup\_overtime\_shifts/3} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed, using the \texttt{count} constraint, to determine how many times each overtime shift occurs in that day. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be \CONFIRM{equal} to the daily limit of overtime shifts.
+To implement this constraint, the \texttt{setup\_overtime\_shifts/3} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed, using the \texttt{count} constraint, to determine how many times each overtime shift occurs in that day. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be equal to the daily limit of overtime shifts.
 
 \subsubsection*{Late shifts}
 
@@ -220,6 +220,10 @@ Since weekend schedules are known ahead of time and don't need to be calculated,
 Some absenses schedules are known ahead of time and don't need to be calculated, as described in constraint \ref{constraint:absenses-known-ahead-of-time}. To implement this constraint, its implementation was made more general and, instead, there is support for setting any worker's schedule ahead of time (including 0 for absenses).
 This was done using \texttt{maplist(eq\_list, Worker\_Day\_Shift, KnownShifts)} for daytime shifts, which ensures that every list inside \texttt{Worker\_Day\_Shift} - that is, a worker's weekly schedule - is equal to the corresponding list inside \texttt{KnownShifts}. The same is done for nighttime shifts.
 The constraint where 4 workers need to be absent every day was not implemented, since it is implicit in the problem domain: with 13 workers and 9 daytime shifts, 4 workers will be absent every day.
+
+\subsection{Optimization Criteria}
+
+For each optimization criteria that was described in section \ref{section:problem-statement}, a predicate was created to enforce it. How each predicate is implemented will be described in the following paragraphs.
 
 \section{Results}
 \label{section:results}
