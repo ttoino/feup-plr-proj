@@ -2,7 +2,7 @@
 :- use_module(library(between)).
 :- use_module(library(clpfd)).
 
-:- consult('util.pl').
+:- consult('util-old.pl').
 
 % schedule(
 %     +Flags,
@@ -110,16 +110,16 @@ schedule(
     setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts),
 
     setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts),
-    
+
     setup_rotated_shifts(Shift_Day_Worker, RotatedShifts),
 
     setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift),
 
-    setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts),
+    setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts),
 
     % Ensure every night shift is assigned
     ( foreach(NightShift_Worker, Day_NightShift_Worker) do
-        count(0, NightShift_Worker, 0)
+        count(0, NightShift_Worker, #=, 0)
     ),
 
     calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores),
@@ -133,7 +133,7 @@ schedule(
     calculate_rotated_shift_scores(Worker_Day_Shift, RotatedShifts, RotatedShiftScores, RotatedShiftScoresOut),
     transpose(RotatedShiftScoresOut, RotatedShiftScoresOutTransposed),
     maplist(score_distances, RotatedShiftScoresOutTransposed, RotatedShiftScoresDistances),
-    sum(RotatedShiftScoresDistances, RotatedShiftScore),
+    sum(RotatedShiftScoresDistances, #=, RotatedShiftScore),
 
     calculate_overtime_shift_scores(Worker_Day_Shift, OvertimeShifts, OvertimeShiftScores, OvertimeShiftScoresOut),
     score_distances(OvertimeShiftScoresOut, OvertimeShiftScore),
@@ -151,7 +151,7 @@ schedule(
         RotatedShiftScore,
         OvertimeShiftScore,
         NightShiftScore
-    ], MiniScore),
+    ], #=, MiniScore),
     Score #= MaxiScore - MiniScore,
 
     % All variables to be flattened
@@ -229,12 +229,13 @@ setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
     ( foreach(Shift_Worker, Day_Shift_Worker), 
       param(AlternativeShifts), 
       param(NumberOfAlternativeShifts) do
-        count(0, Shift_Worker, NumberOfAlternativeShifts),
+        count(0, Shift_Worker, #=, NumberOfAlternativeShifts),
         ( foreach(Shift1-Shift2, AlternativeShifts), 
           param(Shift_Worker) do
             nth1(Shift1, Shift_Worker, Worker1),
             nth1(Shift2, Shift_Worker, Worker2),
-            Worker1 #= 0 #<=> Worker2 #\= 0
+            Worker1 #= 0 #\/ Worker2 #= 0,
+            Worker1 #\= Worker2
         )
     ).
 
@@ -291,15 +292,15 @@ setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift) :-
 %
 % Forces workers that have a late shift assigned to not have a night shift
 % assigned
-setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts) :-
-    list_to_fdset(LateShifts, LateShiftsSet),
-    ( foreach(Worker_Shift, Day_Worker_Shift), 
+setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
+    ( foreach(Shift_Worker, Day_Shift_Worker), 
       foreach(Worker_NightShift, Day_Worker_NightShift), 
-      param(LateShiftsSet) do
-        ( foreach(Shift, Worker_Shift), 
-          foreach(NightShift, Worker_NightShift), 
-          param(LateShiftsSet) do
-            (NightShift #\= 0) #=> (#\ (Shift in_set LateShiftsSet))
+      param(LateShifts) do
+        ( foreach(LateShift, LateShifts), 
+          param(Shift_Worker), 
+          param(Worker_NightShift) do
+            nth1(LateShift, Shift_Worker, Worker),
+            (Worker #\= 0) #=> (element(Worker, Worker_NightShift, 0))
         )
     ).
 
@@ -337,7 +338,7 @@ calculate_absences(Worker_Day_Shift, AvailableAbsences, AvailableAbsencesOut) :-
     ( foreach(Day_Shift, Worker_Day_Shift), 
       foreach(AvailableAbsence, AvailableAbsences), 
       foreach(AvailableAbsenceOut, AvailableAbsencesOut) do
-        count(0, Day_Shift, UsedAbsences),
+        count(0, Day_Shift, #=, UsedAbsences),
         AvailableAbsenceOut #>= 0,
         AvailableAbsenceOut #= AvailableAbsence - UsedAbsences
     ).
@@ -359,7 +360,7 @@ calculate_rotated_shift_scores(Worker_Day_Shift, RotatedShifts, RotatedShiftScor
           foreach(RotatedShiftScoreEl, RotatedShiftScore), 
           foreach(RotatedShiftScoreOutEl, RotatedShiftScoreOut), 
           param(Day_Shift) do
-            count(RotatedShift, Day_Shift, RotatedShiftScoreTemp),
+            count(RotatedShift, Day_Shift, #=, RotatedShiftScoreTemp),
             RotatedShiftScoreOutEl #= RotatedShiftScoreTemp + RotatedShiftScoreEl
         )
     ).
@@ -403,5 +404,12 @@ calculate_night_shift_scores(Worker_Day_NightShift, NightShiftScores, NightShift
 % Calculates the sum of the distances for each combination of scores
 % Minimizing this value will "balance" the scores
 score_distances(Scores, DistancesSum) :-
-    map_product(dist, Scores, Scores, Distances),
-    sum(Distances, DistancesSum).
+    ( foreach(Score1, Scores),
+      param(Scores),
+      fromto(0, DistancesSumIn, DistancesSumOut, DistancesSum) do
+        ( foreach(Score2, Scores),
+          param(Score1),
+          fromto(DistancesSumIn, In, Out, DistancesSumOut) do
+            Out #= In + abs(Score1 - Score2)
+        )
+    ).
