@@ -16,4 +16,7 @@ Othewise, consult the files `schedule.pl` and `util.pl`.
 
 At this point, you can run the predicate `main` to test the model.
 
+`benchmark(Flags)` can be used to benchmark the model with the given labeling options (flags).
+Otherwise, `benchmark` will run the model with the default flags.
+
 You can change the files `input.pl` and `input-known.pl` (depends on which one you're using) to test the model with different inputs.
