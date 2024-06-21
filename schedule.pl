@@ -110,8 +110,7 @@ schedule(
     setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts),
 
     setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts),
-
-    % MISSING IN REPORT
+    
     setup_rotated_shifts(Shift_Day_Worker, RotatedShifts),
 
     setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift),

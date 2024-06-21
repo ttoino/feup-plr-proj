@@ -20,6 +20,9 @@
 
 \def\NOIMPL#1{\ul{#1} {\color{blue}[NOT IMPLEMENTED]\color{black}}}
 \def\CONFIRM#1{\ul{#1} {\color{red}[CONFIRM]\color{black}}}
+\def\CONFIRMIF[#1]#2{\ul{#2} {\color{red}[CONFIRM IF #1]\color{black}}}
+
+\def\constraint#1{\vspace{4pt} {#1}}
 
 \begin{document}
 
@@ -108,12 +111,16 @@ The resulting set of constraints can be summarized as follows:
         Workers cannot be assigned to shifts that are incompatible with their daily commitments. These commitments are known ahead of time and will be referred to as a worker's \textbf{shift incompatibilities}.
     }
     \item {
+        \label{constraint:rotated-shifts}
+        Some shifts have a "good" or "bad" reputation and a worker cannot be assigned more than once to each of these shifts. These shifts will be refered to as \textbf{rotated shifts}.
+    }
+    \item {
         \label{constraint:weekend-schedules-known-ahead-of-time}
         Weekend schedules are known ahead of time and don't need to be calculated.
     }
     \item {
-        \label{constraint:absenses-known-ahead-of-time}
-        Some absenses are known ahead of time. Every day, 4 workers need to be absent.
+        \label{constraint:absences-known-ahead-of-time}
+        Some absences are known ahead of time. Every day, 4 workers need to be absent.
     }
 \end{enumerate}
 
@@ -125,20 +132,24 @@ Furthermore, certain criteria make a schedule better than others. These criteria
         Workers should have their preferences met. For example, if a worker prefers to start and end their shifts earlier, then they should be assigned to shifts that facilitate that, if possible.
     }
     \item {
+        \label{criterion:nighttime-workers-prioritzation}
+        If a worker is assigned to a night shift, their preferences should be prioritized in the daytime shift. Furthermore, in the following day, they should be assigned to an absense, whenever possible.
+    }
+    \item {
+        \label{criterion:night-shifts-distribution}
+        Nighttime shifts should be equally distributed among all workers.
+    }
+    \item {
         \label{criterion:rotated-shifts-distribution}
-        Some shifts have a "good" or "bad" reputation and, thus, each of them needs to be equally distributed among all workers. These shifts will be referred to as \textbf{rotated shifts}.
+        Rotated shifts need to be equally distributed among all workers.
     }
     \item {
         \label{criterion:overtime-distribution}
         Overtime should be equally distributed among all workers.
     }
     \item {
-        \label{criterion:absenses-distribution}
-        Absenses that are not known ahead of time should be equally distributed among all workers.
-    }
-    \item {
-        \label{criterion:nighttime-workers-prioritzation}
-        If a worker is assigned to a night shift, \CONFIRM{their preferences should be prioritized in the daytime shift}. Furthermore, in the following day, they should be assigned to an absense, whenever possible.
+        \label{criterion:absences-distribution}
+        Absences that are not known ahead of time should be equally distributed among all workers.
     }
     \item {
         \label{criterion:worker-groups}
@@ -146,7 +157,7 @@ Furthermore, certain criteria make a schedule better than others. These criteria
     }
 \end{enumerate}
 
-As it can be seen, this problem presents similarities to the \textit{nurses' problem}, which is a well known problem in the scheduling literature. However, this problem has some unique constraints, such as the fact that some shifts have variable length or that a pharmacist can be assigned to a daytime shift and a nighttime shift in the same day. Furthermore, this problem also presents some optimization elements, such as the equal distribution of overtime and absenses.
+As it can be seen, this problem presents similarities to the \textit{nurses' problem}, which is a well known problem in the scheduling literature. However, this problem has some unique constraints, such as the fact that some shifts have variable length or that a pharmacist can be assigned to a daytime shift and a nighttime shift in the same day. Furthermore, this problem also presents some optimization elements, such as the equal distribution of overtime and absences.
 
 \section{Proposed Model}
 \label{section:proposed-model}
@@ -185,91 +196,116 @@ For each constraint that was described in section \ref{section:problem-statement
 
 Regarding constraints \ref{constraint:domain} and \ref{constraint:shifts}, they already already enforced by the domain of the matrices, as described in \ref{section:data-structures}.
 
-Regarding the optimization criterion \ref{criterion:worker-groups}, it was not implemented, since it was considered to be a low priority criterion.
+\constraint {
+    \subsubsection*{Variable-length shifts}
+    In order to implement variable-length shifts, as described in constraint \ref{constraint:variable-length-shifts}, the concept of alternative shifts was introduced. Alternative shifts are shifts where only of them can exist in a given day of the week. A list of pairs of indices of shifts is defined to indicate which shifts represent different lengths of the same shift.
+    To implement this constraint, the \texttt{setup\_alternative\_shifts/2} predicate was created. In it, for each day in the \texttt{Day\_Shift\_Worker} matrix, two sets of constraints are imposed: the first is a constraint that states that the number of shifts that have no workers assigned to them is equal to the number of alternative shift pairs, implemented using \texttt{count}; the second is that, for each pair of alternative shifts, exactly one of them must have a worker assigned, implemented using \texttt{Worker1 \#= 0 \#<=> Worker2 \#\textbackslash= 0}.
+}
 
-\subsubsection*{Variable-length shifts}
+\constraint {
+    \subsubsection*{Overtime shifts}
+    To implement overtime shifts, as described in constraint \ref{constraint:overtime-shifts}, a list of indices of shifts that are considered to be overtime shifts is defined. This approach, combined with the one used for variable-length shifts, allows for only one of the alternative shifts to be considered an overtime shift, if needed. Furthermore, the total number of overtime shifts per day is defined.
+    To implement this constraint, the \texttt{setup\_overtime\_shifts/3} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed, using the \texttt{count} constraint, to determine how many times each overtime shift occurs in that day. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be equal to the daily limit of overtime shifts.
+}
 
-In order to implement variable-length shifts, as described in constraint \ref{constraint:variable-length-shifts}, the concept of alternative shifts was introduced. Alternative shifts are shifts where only of them can exist in a given day of the week. A list of pairs of indices of shifts is defined to indicate which shifts represent different lengths of the same shift.
-To implement this constraint, the \texttt{setup\_alternative\_shifts/2} predicate was created. In it, for each day in the \texttt{Day\_Shift\_Worker} matrix, two sets of constraints are imposed: the first is a constraint that states that the number of shifts that have no workers assigned to them is equal to the number of alternative shift pairs, implemented using \texttt{count}; the second is that, for each pair of alternative shifts, exactly one of them must have a worker assigned, implemented using \texttt{Worker1 \#= 0 \#<=> Worker2 \#\textbackslash= 0}.
+\constraint {
+    \subsubsection*{Late shifts}
+    To implement late shifts, as described in constraint \ref{constraint:late-shifts}, a list of indices of shifts that are considered to be late shifts is defined. Like with the overtime shifts, this allows for only one of the alternative shifts to be considered a late shift, if needed. Furthermore, the maximum number of late shifts per week per worker is defined.
+    To implement this constraint, the \texttt{setup\_late\_shifts/3} predicate was created. In it, for each worker in the \texttt{Worker\_Day\_Shift} matrix (the transposed matrix of the \texttt{Day\_Worker\_Shift} matrix), constraints are imposed, using the \texttt{count} constraint, to determine how many times each late shift occurs in that week. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be less than or equal to the weekly limit of late shifts per worker.
+}
 
-\subsubsection*{Overtime shifts}
+\constraint {
+    \subsubsection*{Nighttime shift implies an early daytime shift}
+    To implement the constraint that assigning a nighttime shift implies an assignment of an daytime shift, as described in constraint \ref{constraint:nighttime-shift-implies-daytime-shift}, the \texttt{setup\_night\_shifts/2} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} and \texttt{Day\_Worker\_NightShift} matrices, constraints are imposed to ensure that, if a worker is assigned to a nighttime shift on a given day, then they must also be assigned to a daytime shift on the same day. This is implemented using the constraint \texttt{NightShift \#\textbackslash= 0 \#=> Shift \#\textbackslash= 0}. To ensure that the assigned daytime shift is an early shift, as described in the previously mentioned constraint, the \texttt{setup\_late\_night\_shifts/3} predicate was implemented. In it, for each day in the \texttt{Day\_Shift\_Worker} and \texttt{Day\_Worker\_NightShift} matrices, all late shifts are iterated over and, if a worker is assigned to a late shift during the day, then their nighttime shift is set to 0, using the \texttt{element} constraint.
+}
 
-To implement overtime shifts, as described in constraint \ref{constraint:overtime-shifts}, a list of indices of shifts that are considered to be overtime shifts is defined. This approach, combined with the one used for variable-length shifts, allows for only one of the alternative shifts to be considered an overtime shift, if needed. Furthermore, the total number of overtime shifts per day is defined.
-To implement this constraint, the \texttt{setup\_overtime\_shifts/3} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} matrix, constraints are imposed, using the \texttt{count} constraint, to determine how many times each overtime shift occurs in that day. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be equal to the daily limit of overtime shifts.
+\constraint {
+    \subsubsection*{Shift incompatibilities}   
+    To implement shift incompatibilities, as described in constraint \ref{constraint:shift-incompatibilities}, a list of shift incompatibilities is defined. This list contains, for each worker, a list of indices of shifts that are incompatible with their daily commitments.
+    To implement this constraint, the \texttt{setup\_incompatible\_shifts/2} predicate was created. In it, for each day and each worker in the \texttt{Day\_Worker\_Shift} matrix, a constraint is imposed on every shift to ensure it is not equal to any of the incompatible shifts for that worker, using the \texttt{Shift \#\textbackslash= IncompatibleShift} constraint.
+}
 
-\subsubsection*{Late shifts}
+\constraint {
+    \subsubsection*{Rotated shifts}
+    To implement rotated shifts, as described in constraint \ref{constraint:rotated-shifts}, a list of indices of shifts that are considered to be rotated shifts is defined.
+    To implement this constraint, the \texttt{setup\_rotated\_shifts/2} predicate was created. In it, for each shift in the rotated shifts list, a \texttt{all\_different\_except\_0} constraint is imposed on the corresponding list of workers that are assigned to that shift in each day, to ensure that no worker is assigned more than once to that rotated shift.
+}
 
-To implement late shifts, as described in constraint \ref{constraint:late-shifts}, a list of indices of shifts that are considered to be late shifts is defined. Like with the overtime shifts, this allows for only one of the alternative shifts to be considered a late shift, if needed. Furthermore, the maximum number of late shifts per week per worker is defined.
-To implement this constraint, the \texttt{setup\_late\_shifts/3} predicate was created. In it, for each worker in the \texttt{Worker\_Day\_Shift} matrix (the transposed matrix of the \texttt{Day\_Worker\_Shift} matrix), constraints are imposed, using the \texttt{count} constraint, to determine how many times each late shift occurs in that week. The counts are then added, using the \texttt{sum} constraint, and the result is imposed to be less than or equal to the weekly limit of late shifts per worker.
+\constraint {
+    \subsubsection*{Weekend schedules known ahead of time}   
+    Since weekend schedules are known ahead of time and don't need to be calculated, as described in constraint \ref{constraint:weekend-schedules-known-ahead-of-time}, it was decided to only support generating schedules for weekdays.
+}
+    
+\constraint {
+    \subsubsection*{Absences that are known ahead of time}
+    Some absences schedules are known ahead of time and don't need to be calculated, as described in constraint \ref{constraint:absences-known-ahead-of-time}. To implement this constraint, its implementation was made more general and, instead, there is support for setting any worker's schedule ahead of time (including 0 for absences).
+    This was done using \texttt{maplist(eq\_list, Worker\_Day\_Shift, KnownShifts)} for daytime shifts, which ensures that every list inside \texttt{Worker\_Day\_Shift} - that is, a worker's weekly schedule - is equal to the corresponding list inside \texttt{KnownShifts}. The same is done for nighttime shifts.
+    The constraint where 4 workers need to be absent every day was not implemented, since it is implicit in the problem domain: with 13 workers and 9 daytime shifts, 4 workers will be absent every day.
+}
 
-\subsubsection*{Nighttime shift implies an early daytime shift}
-
-To implement the constraint that assigning a nighttime shift implies an assignment of an daytime shift, as described in constraint \ref{constraint:nighttime-shift-implies-daytime-shift}, the \texttt{setup\_night\_shifts/2} predicate was created. In it, for each day in the \texttt{Day\_Worker\_Shift} and \texttt{Day\_Worker\_NightShift} matrices, constraints are imposed to ensure that, if a worker is assigned to a nighttime shift on a given day, then they must also be assigned to a daytime shift on the same day. This is implemented using the constraint \texttt{NightShift \#\textbackslash= 0 \#=> Shift \#\textbackslash= 0}. To ensure that the assigned daytime shift is an early shift, as described in the previously mentioned constraint, the \texttt{setup\_late\_night\_shifts/3} predicate was implemented. In it, for each day in the \texttt{Day\_Shift\_Worker} and \texttt{Day\_Worker\_NightShift} matrices, all late shifts are iterated over and, if a worker is assigned to a late shift during the day, then their nighttime shift is set to 0, using the \texttt{element} constraint.
-
-\subsubsection*{Shift incompatibilities}
-
-To implement shift incompatibilities, as described in constraint \ref{constraint:shift-incompatibilities}, a list of shift incompatibilities is defined. This list contains, for each worker, a list of indices of shifts that are incompatible with their daily commitments.
-To implement this constraint, the \texttt{setup\_incompatible\_shifts/2} predicate was created. In it, for each day and each worker in the \texttt{Day\_Worker\_Shift} matrix, a constraint is imposed on every shift to ensure it is not equal to any of the incompatible shifts for that worker, using the \texttt{Shift \#\textbackslash= IncompatibleShift} constraint.
-
-\subsubsection*{Weekend schedules known ahead of time}
-
-Since weekend schedules are known ahead of time and don't need to be calculated, as described in constraint \ref{constraint:weekend-schedules-known-ahead-of-time}, it was decided to only support generating schedules for weekdays.
-
-\subsubsection*{Absenses that are known ahead of time}
-
-Some absenses schedules are known ahead of time and don't need to be calculated, as described in constraint \ref{constraint:absenses-known-ahead-of-time}. To implement this constraint, its implementation was made more general and, instead, there is support for setting any worker's schedule ahead of time (including 0 for absenses).
-This was done using \texttt{maplist(eq\_list, Worker\_Day\_Shift, KnownShifts)} for daytime shifts, which ensures that every list inside \texttt{Worker\_Day\_Shift} - that is, a worker's weekly schedule - is equal to the corresponding list inside \texttt{KnownShifts}. The same is done for nighttime shifts.
-The constraint where 4 workers need to be absent every day was not implemented, since it is implicit in the problem domain: with 13 workers and 9 daytime shifts, 4 workers will be absent every day.
-
-\subsection{Optimization Criteria}
+\subsection{Optimization criteria}
 \label{section:optimization-criteria}
 
-To address the optimization criteria described in section \ref{section:problem-statement}, several predicates were implemented to calculate scores for different aspects of the schedule. These scores are then combined into an overall objective function that the program aims to maximize.
+In addition to the constraints, several optimization criteria were implemented to improve the quality of the generated schedules. These criteria aim to meet worker preferences, distribute shifts fairly, and balance workloads.
 
-\subsubsection*{Worker preferences}
+Regarding the optimization criterion \ref{criterion:worker-groups}, it was not implemented, since it was considered to be a low priority criterion.
 
-To implement worker preferences, as described in criterion \ref{criterion:worker-preferences}, two predicates were created: \texttt{calculate\_preference\_scores/3} and \texttt{calculate\_priority\_preference\_scores/4}.
+\constraint {
+    \subsubsection*{Worker preferences}
+    To implement worker preferences, as described in criterion \ref{criterion:worker-preferences}, two lists of preferred shifts are defined: one for daytime shifts and another for nighttime shifts. These lists contain, for each worker, a list with the indices of their preferred shifts.
+    To implement this criterion, the \texttt{calculate\_preference\_scores/3} predicate was created. For each worker, it determines how many times they are assigned to a preferred shift throughout the week. These individual scores are returned by the predicate. This is done for both daytime and nighttime shifts separately.
+}
 
-The \texttt{calculate\_preference\_scores/3} predicate calculates scores for both daytime and nighttime shift preferences. It uses the \texttt{counts} predicate to count how many times each worker is assigned to their preferred shifts throughout the week.
+\constraint {
+    \subsubsection*{Prioritization of nighttime workers}
+    To prioritize the preferences of workers assigned to night shifts, as described in criterion \ref{criterion:nighttime-workers-prioritzation}, the \texttt{calculate\_priority\_preference\_scores/4} predicate was implemented. This predicate, for each worker in the \texttt{Worker\_Day\_Shift} matrix, counts how many times they are assigned to nighttime shifts and to a preferred daytime shift in the same day. This is implemented using the \texttt{(NightShift \#\textbackslash= 0) \#/\textbackslash element(\_, PreferredShift, Shift)} predicate.
+}
 
-The \texttt{calculate\_priority\_preference\_scores/4} predicate gives additional priority to workers assigned to night shifts, as mentioned in criterion \ref{criterion:nighttime-workers-prioritzation}. It iterates through each day and worker, adding a score when a worker with a night shift is also assigned to one of their preferred daytime shifts.
+\constraint {
+    \subsubsection*{Distribution of rotated shifts}
+    To ensure an equal distribution of rotated shifts over multiple weeks, as described in criterion \ref{criterion:rotated-shifts-distribution}, a list with the previous rotated shift score for every worker and rotated shift is provided, that is, how many times they were assigned to that rotated shift in previous weeks. 
+    To implement this criterion, the \texttt{calculate\_rotated\_shift\_scores/4} predicate was created. In it, for each worker in the \texttt{Worker\_Day\_Shift} matrix, and for each rotated shift, the number of times they are assigned to that rotated shift is determined, using the \texttt{count} constraint. This value is then added to that worker's previous rotated shift score to determine the new rotated shift score, for that shift. In the end, these new rotated shift scores are returned by the predicate.
+}
 
-\subsubsection*{Rotated shifts distribution}
 
-To ensure an equal distribution of rotated shifts, as described in criterion \ref{criterion:rotated-shifts-distribution}, the \texttt{calculate\_rotated\_shift\_scores/4} predicate was implemented. This predicate counts the occurrences of each rotated shift for each worker throughout the week. The resulting scores are then processed by the \texttt{score\_distances/2} predicate, which calculates the sum of the distances between each pair of scores, promoting a more equal distribution.
+\constraint {
+    \subsubsection*{Overtime distribution}
+    To distribute overtime equally among workers over multiple weeks, as described in criterion \ref{criterion:overtime-distribution}, a list with the previous overtime shift score for every worker is provided, that is, how many times they were assigned to an overtime shift in previous weeks. 
+    To implement this criterion, the \texttt{calculate\_overtime\_shift\_scores/4} predicate was implemented. In it, a procedure similar to the one used for rotated shift distribution is used, with the simplification that the counts for all overtime shifts are aggregated into a single count. The new overtime shift scores are returned by the predicate.
+}
 
-\subsubsection*{Overtime distribution}
+\constraint {
+    \subsubsection*{Absences distribution}
+    To distribute absences equally among workers over multiple weeks, as described in criterion \ref{criterion:absences-distribution}, a list with the previous available absences for every worker is provided, that is, how many absences they can take in the following weeks.
+    To implement this criterion, the \texttt{calculate\_absences/3} predicate was implemented. In it, a procedure similar to the one used for rotated shift and overtime shift distributions is used, with the difference that the absences taken by the worker are subtracted from their previous available absences. The new available absences is constrained to be greater than 0. The new available absences are returned by the predicate.
+}
 
-To address the equal distribution of overtime, as mentioned in criterion \ref{criterion:overtime-distribution}, the \texttt{calculate\_overtime\_shift\_scores/4} predicate was created. Similar to the rotated shifts, this predicate counts the occurrences of overtime shifts for each worker throughout the week. The \texttt{score\_distances/2} predicate is then used to promote an equal distribution of overtime among workers.
+\subsection{Objective Function}
+\label{section:objective-function}
 
-\subsubsection*{Absences distribution}
+The objective function combines all the optimization criteria into a single score that represents the quality of the generated schedule. This score is calculated using the \texttt{Score} variable in the main \texttt{schedule/20} predicate.
+The objective function is divided into two main components:
 
-To handle the distribution of absences, as described in criterion \ref{criterion:absenses-distribution}, two predicates were implemented: \texttt{calculate\_absences/3} and \texttt{score\_distances/2}.
+A maximization component (\texttt{MaxiScore}), which includes:
 
-The \texttt{calculate\_absences/3} predicate calculates the number of absences used by each worker during the week, subtracting it from their available absences. The \texttt{score\_distances/2} predicate is then used to promote an equal distribution of remaining available absences among workers.
+\begin{itemize}
+    \item Preference scores for daytime and nighttime shifts
+    \item Priority preference scores for nighttime workers
+\end{itemize}
 
-\subsubsection*{Night shift distribution}
+A minimization component (\texttt{MiniScore}), which includes:
 
-Although not explicitly mentioned in the criteria, the distribution of night shifts is also considered in the optimization. The \texttt{calculate\_night\_shift\_scores/3} predicate counts the number of night shifts assigned to each worker throughout the week. The \texttt{score\_distances/2} predicate is then used to promote an equal distribution of night shifts among workers.
+\begin{itemize}
+    \item Scores for the distribution of available absences
+    \item Scores for the distribution of rotated shifts
+    \item Scores for the distribution of overtime shifts
+    \item Scores for the distribution of night shifts
+\end{itemize}
 
-\subsection{Objective function}
-
-The overall objective function combines the scores from all the above criteria. It is implemented in the main \texttt{schedule/26} predicate. The function is divided into two parts:
-
-1. A \texttt{MaxiScore} that sums the positive scores:
-   - Preference scores for daytime shifts
-   - Preference scores for nighttime shifts
-   - Priority preference scores for workers with night shifts
-
-2. A \texttt{MiniScore} that sums the distance scores (which are minimized):
-   - Available absences distribution score
-   - Rotated shifts distribution score
-   - Overtime distribution score
-   - Night shift distribution score
-
-The final score is calculated as \texttt{Score \#= MaxiScore - MiniScore}. This score is then maximized using the \texttt{labeling} predicate with the \texttt{maximize(Score)} option.
-
-By combining these various scoring mechanisms, the program aims to generate a schedule that balances all the optimization criteria, producing a solution that satisfies worker preferences while ensuring fair distribution of various shift types and absences.
+The final score is calculated as the difference between the maximization and minimization components: \texttt{Score \#= MaxiScore - MiniScore}.
+To evaluate the fairness of distributions (for absences, rotated shifts, overtime shifts, and night shifts), the \texttt{score\_distances/2} predicate is used. This predicate calculates the sum of absolute differences between all pairs of scores, providing a measure of how evenly distributed these aspects are among workers.
+The objective function aims to maximize worker preferences and priority preferences while minimizing the differences in the distribution of absences, rotated shifts, overtime shifts, and night shifts. This balanced approach ensures that the generated schedule not only meets workers' preferences but also maintains fairness in the distribution of various shift types and workloads.
+The final schedule is obtained using the \texttt{labeling/2} predicate with the \texttt{maximize(Score)} option, which searches for a solution that maximizes the calculated score, thus producing the best possible schedule according to the defined criteria and constraints.
 
 \section{Results}
 \label{section:results}
