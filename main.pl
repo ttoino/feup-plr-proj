@@ -3,6 +3,57 @@
 
 :- use_module(library(codesio)).
 
+% schedule(
+%     +Flags,
+%     -Day_Worker_Shift,
+%     -Day_Shift_Worker,
+%     -Worker_Day_Shift,
+%     -Shift_Day_Worker,
+%     -Day_Worker_NightShift,
+%     -Day_NightShift_Worker,
+%     -Worker_Day_NightShift,
+%     -NightShift_Day_Worker,
+%     -AvailableAbsencesOut,
+%     -RotatedShiftScoresOut,
+%     -OvertimeShiftScoresOut,
+%     -NightShiftScoresOut,
+%     -Score
+% )
+%
+% Schedules the workers to the shifts, maximizing the score.
+% 
+% The following parameters customize the search:
+%
+% `Flags` is a list of options for the labeling predicate.
+%
+% The following parameters are the outputed schedule:
+%
+% `Day_Worker_Shift` is a matrix where each line is a day and each column is a 
+%   worker, containing the shift assigned to said worker in said day.
+%   0 means no shift is assigned.
+% `Day_Shift_Worker` is a matrix where each line is a day and each column is a
+%   shift, containing the worker assigned to said shift in said day.
+%   0 means no worker is assigned.
+% `Worker_Day_Shift` is the transpose of `Day_Shift_Worker`.
+% `Shift_Day_Worker` is the transpose of `Day_Worker_Shift`.
+% `Day_Worker_NightShift` is the same as `Day_Worker_Shift`, but for night 
+%   shifts.
+% `Day_NightShift_Worker` is the same as `Day_Shift_Worker`, but for night
+%   shifts.
+% `Worker_Day_NightShift` is the transpose of `Day_NightShift_Worker`.
+% `NightShift_Day_Worker` is the transpose of `Day_Worker_NightShift`.
+% `AvailableAbsencesOut` is a list where each element is the number of
+%   available absences for the corresponding worker.
+% `RotatedShiftScoresOut` is a matrix where each line is a worker and each
+%   column is a rotated shift, containing the number of times the worker has
+%   been assigned to said shift.
+% `OvertimeShiftScoresOut` is a list where each element is the number of times
+%   the corresponding worker has been assigned to an overtime shift.
+% `NightShiftScoresOut` is a list where each element is the number of night
+%   shifts assigned to the corresponding worker.
+% `Score` is the score of the schedule.
+%
+% The parameters to customize the scheduling are defined in the `input.pl` file.
 schedule(
     Flags,
     Day_Worker_Shift,
@@ -75,6 +126,14 @@ schedule(
         NightShiftScores
     ).
 
+% print_outputs(
+%     +AvailableAbsences,
+%     +RotatedShiftScores,
+%     +OvertimeShiftScores,
+%     +NightShiftScores
+% )
+%
+% Prints the outputs of the scheduling, but not the schedule itself.
 print_outputs(
     AvailableAbsences,
     RotatedShiftScores,
@@ -93,6 +152,9 @@ print_outputs(
     write('Night shift scores: '),
     print_list(NightShiftScores), nl.
 
+% print_list_element(+Element)
+%
+% Prints an element of a list in a human-readable format.
 print_list_element(Element) :-
     is_list(Element), !,
     write('[ '),
@@ -107,6 +169,9 @@ print_list_element(Element) :-
 print_list_element(Element) :-
     write(Element).
 
+% print_list(+List)
+%
+% Prints a list in a human-readable format.
 print_list(List) :-
     write('['), nl,
     length(List, Length),
@@ -120,6 +185,13 @@ print_list(List) :-
     ),
     write(']'), nl.
 
+% print_schedule(
+%     +Day_Worker_Shift,
+%     +Shift_Day_Worker,
+%     +NightShift_Day_Worker
+% )
+%
+% Prints the schedule itself in a human-readable format.
 print_schedule(
     Day_Worker_Shift,
     Shift_Day_Worker,
@@ -194,12 +266,21 @@ print_schedule(
         nl
     ).
 
+% print_worker(+WorkerIndex, +Workers, +ColumnFormat)
+%
+% Prints a worker (a cell of the schedule) in a human-readable format.
 print_worker(0, _, ColumnFormat) :-
     format(ColumnFormat, ['']).
 print_worker(WorkerIndex, Workers, ColumnFormat) :-
     nth1(WorkerIndex, Workers, Worker),
     format(ColumnFormat, [Worker]).
 
+% benchmark
+% benchmark(+Flags)
+%
+% Runs the scheduling algorithm with the given flags (or the ones defined in the
+% `input.pl` file) and prints the time it took and the score it achieved for
+% each solution found, in CSV format.
 benchmark :-
     flags(Flags),
     benchmark(Flags).
@@ -208,9 +289,13 @@ benchmark(Flags) :-
     append(Flags, [all], AllFlags),
     schedule(AllFlags, _, _, _, _, _, _, _, _, _, _, _, _, S),
     statistics(runtime, [Time, _]),
-    write(Time), write(','), write(S), nl,
+    write(Time), write(','), write(S), nl, flush_output,
     false.
 
+% main
+% 
+% Runs the scheduling algorithm with the flags and timeout defined in the
+% `input.pl` file and prints the outputs and the schedule itself.
 main :-
     flags(Flags),
     timeout(Timeout),

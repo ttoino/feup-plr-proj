@@ -5,7 +5,7 @@
 :- consult('util.pl').
 
 % schedule(
-%     +Options,
+%     +Flags,
 %     -Day_Worker_Shift,
 %     -Day_Shift_Worker,
 %     -Worker_Day_Shift,
@@ -42,33 +42,8 @@
 %
 % Schedules the workers to the shifts, maximizing the score.
 %
-% `Flags` is a list of options for the labeling predicate.
-% `Day_Worker_Shift` is a matrix where each line is a day and each column is a 
-%   worker, containing the shift assigned to said worker in said day.
-%   0 means no shift is assigned.
-% `Day_Shift_Worker` is a matrix where each line is a day and each column is a
-%   shift, containing the worker assigned to said shift in said day.
-%   0 means no worker is assigned.
-% `Worker_Day_Shift` is the transpose of `Day_Shift_Worker`.
-% `Shift_Day_Worker` is the transpose of `Day_Worker_Shift`.
-% `Day_Worker_NightShift` is the same as `Day_Worker_Shift`, but for night 
-%   shifts.
-% `Day_NightShift_Worker` is the same as `Day_Shift_Worker`, but for night
-%   shifts.
-% `Worker_Day_NightShift` is the transpose of `Day_NightShift_Worker`.
-% `NightShift_Day_Worker` is the transpose of `Day_Worker_NightShift`.
-% `AvailableAbsencesOut` is a list where each element is the number of
-%   available absences for the corresponding worker.
-% `RotatedShiftScoresOut` is a matrix where each line is a worker and each
-%   column is a rotated shift, containing the number of times the worker has
-%   been assigned to said shift.
-% `OvertimeShiftScoresOut` is a list where each element is the number of times
-%   the corresponding worker has been assigned to an overtime shift.
-% `NightShiftScoresOut` is a list where each element is the number of night
-%   shifts assigned to the corresponding worker.
-% `Score` is the score of the schedule.
-%
-% The remaining parameters are explained in the `input.pl` file.
+% The parameters for this predicate are explained in the `schedule/14` predicate
+%   in the `main.pl` file, and in the `input.pl` file.
 schedule(
     % Options
     Flags,
@@ -189,11 +164,13 @@ schedule(
         Day_NightShift_Worker
     ], AllAssignments),
     append(AllAssignments, Variables),
-    append(Variables, [Score], AllVariables),
 
-    write('Searching...'), nl,
+    % write('Searching...'), nl,
     append(Flags, [maximize(Score)], AllFlags),
-    labeling(AllFlags, AllVariables).
+    solve(AllFlags, [
+        labeling(AllFlags, Variables),
+        labeling([], [Score])
+    ]).
 
 % Sets the domain of the decision variables, and initializes alternative
 % matrices using channeling constraints.
