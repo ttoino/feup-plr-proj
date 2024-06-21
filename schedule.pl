@@ -172,6 +172,14 @@ schedule(
         labeling([], [Score])
     ]).
 
+% setup_domain_and_channeling(
+%     -Day_Worker_Shift,
+%     -Day_Shift_Worker,
+%     +NumberOfDays,
+%     +NumberOfWorkers,
+%     +NumberOfShifts
+% )
+%
 % Sets the domain of the decision variables, and initializes alternative
 % matrices using channeling constraints.
 setup_domain_and_channeling(Day_Worker_Shift, Day_Shift_Worker, NumberOfDays, NumberOfWorkers, NumberOfShifts) :-
@@ -205,6 +213,8 @@ setup_domain_and_channeling(Day_Worker_Shift, Day_Shift_Worker, NumberOfDays, Nu
         )
     ).
 
+% setup_overtime_shifts(+Day_Worker_Shift, +OvertimeShifts, +DailyOvertimeShifts)
+%
 % Constraints the maximum number of overtime shifts for each worker
 setup_overtime_shifts(Day_Worker_Shift, OvertimeShifts, DailyOvertimeShifts) :-
     ( foreach(Worker_Shift, Day_Worker_Shift), 
@@ -213,6 +223,8 @@ setup_overtime_shifts(Day_Worker_Shift, OvertimeShifts, DailyOvertimeShifts) :-
         counts(OvertimeShifts, Worker_Shift, DailyOvertimeShifts)
     ).
 
+% setup_alternative_shifts(+Day_Shift_Worker, +AlternativeShifts)
+%
 % Prevents alternative shifts from being chosen in the same day
 setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
     length(AlternativeShifts, NumberOfAlternativeShifts),
@@ -228,6 +240,8 @@ setup_alternative_shifts(Day_Shift_Worker, AlternativeShifts) :-
         )
     ).
 
+% setup_incompatible_shifts(+Day_Worker_Shift, +IncompatibleShifts)
+%
 % Prevents incompatible shifts from being chosen by each worker
 setup_incompatible_shifts(Day_Worker_Shift, IncompatibleShifts) :-
     ( foreach(Worker_Shift, Day_Worker_Shift), 
@@ -241,6 +255,8 @@ setup_incompatible_shifts(Day_Worker_Shift, IncompatibleShifts) :-
         )
     ).
 
+% setup_late_shifts(+Worker_Day_Shift, +LateShifts, +WeeklyLateShifts)
+%
 % Constrains the maximum number of late shifts for each worker
 setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts) :-
     ( foreach(Day_Shift, Worker_Day_Shift), 
@@ -250,6 +266,8 @@ setup_late_shifts(Worker_Day_Shift, LateShifts, WeeklyLateShifts) :-
         WeeklyLateShiftsForWorker #=< WeeklyLateShifts
     ).
 
+% setup_rotated_shifts(+Shift_Day_Worker, +RotatedShifts)
+%
 % Rotates shifts between all workers
 setup_rotated_shifts(Shift_Day_Worker, RotatedShifts) :-
     ( foreach(Shift, RotatedShifts), 
@@ -258,6 +276,8 @@ setup_rotated_shifts(Shift_Day_Worker, RotatedShifts) :-
         all_distinct_except_0(Day_Worker)
     ).
 
+% setup_night_shifts(+Day_Worker_Shift, +Day_Worker_NightShift)
+%
 % Forces workers that have a night shift assigned to also have a normal shift
 % assigned in each day
 setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift) :-
@@ -269,9 +289,10 @@ setup_night_shifts(Day_Worker_Shift, Day_Worker_NightShift) :-
         )
     ).
 
+% setup_late_night_shifts(+Day_Worker_Shift, +Day_Worker_NightShift, +LateShifts)
+%
 % Forces workers that have a late shift assigned to not have a night shift
 % assigned
-%setup_late_night_shifts(Day_Shift_Worker, Day_Worker_NightShift, LateShifts) :-
 setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts) :-
     list_to_fdset(LateShifts, LateShiftsSet),
     ( foreach(Worker_Shift, Day_Worker_Shift), 
@@ -283,20 +304,21 @@ setup_late_night_shifts(Day_Worker_Shift, Day_Worker_NightShift, LateShifts) :-
             (NightShift #\= 0) #=> (#\ (Shift in_set LateShiftsSet))
         )
     ).
-    % ( foreach(Shift_Worker, Day_Shift_Worker), 
-    %   foreach(Worker_NightShift, Day_Worker_NightShift), 
-    %   param(LateShifts) do
-    %     ( foreach(LateShift, LateShifts), 
-    %       param(Shift_Worker), 
-    %       param(Worker_NightShift) do
-    %         nth1(LateShift, Shift_Worker, Worker),
-    %         (Worker #\= 0) #=> (element(Worker, Worker_NightShift, 0))
-    %     )
-    % ).
 
+% calculate_preference_scores(+Worker_Day_Shift, +PreferredShifts, -PreferenceScores)
+%
+% Calculates the preference scores for each worker
 calculate_preference_scores(Worker_Day_Shift, PreferredShifts, PreferenceScores) :-
     maplist(counts, PreferredShifts, Worker_Day_Shift, PreferenceScores).
 
+% calculate_priority_preference_scores(
+%     +Worker_Day_Shift,
+%     +Worker_Day_NightShift,
+%     +PreferredShifts,
+%     -PriorityPreferenceScores
+% )
+%
+% Calculates the preference scores for the workers that have a night shift
 calculate_priority_preference_scores(Worker_Day_Shift, Worker_Day_NightShift, PreferredShifts, PriorityPreferenceScores) :-
     ( foreach(Day_Shift, Worker_Day_Shift), 
       foreach(Day_NightShift, Worker_Day_NightShift), 
@@ -310,6 +332,9 @@ calculate_priority_preference_scores(Worker_Day_Shift, Worker_Day_NightShift, Pr
         )
     ).
 
+% calculate_absences(+Worker_Day_Shift, +AvailableAbsences, -AvailableAbsencesOut)
+%
+% Calculates the available absences for each worker after this week
 calculate_absences(Worker_Day_Shift, AvailableAbsences, AvailableAbsencesOut) :-
     ( foreach(Day_Shift, Worker_Day_Shift), 
       foreach(AvailableAbsence, AvailableAbsences), 
@@ -319,6 +344,14 @@ calculate_absences(Worker_Day_Shift, AvailableAbsences, AvailableAbsencesOut) :-
         AvailableAbsenceOut #= AvailableAbsence - UsedAbsences
     ).
 
+% calculate_rotated_shift_scores(
+%     +Worker_Day_Shift,
+%     +RotatedShifts,
+%     +RotatedShiftScores,
+%     -RotatedShiftScoresOut
+% )
+%
+% Calculates the rotated shift scores for each worker
 calculate_rotated_shift_scores(Worker_Day_Shift, RotatedShifts, RotatedShiftScores, RotatedShiftScoresOut) :-
     ( foreach(Day_Shift, Worker_Day_Shift), 
       foreach(RotatedShiftScore, RotatedShiftScores), 
@@ -333,6 +366,14 @@ calculate_rotated_shift_scores(Worker_Day_Shift, RotatedShifts, RotatedShiftScor
         )
     ).
 
+% calculate_overtime_shift_scores(
+%     +Worker_Day_Shift,
+%     +OvertimeShifts,
+%     +OvertimeShiftScores,
+%     -OvertimeShiftScoresOut
+% )
+%
+% Calculates the overtime shift scores for each worker
 calculate_overtime_shift_scores(Worker_Day_Shift, OvertimeShifts, OvertimeShiftScores, OvertimeShiftScoresOut) :-
     ( foreach(Day_Shift, Worker_Day_Shift), 
       foreach(OvertimeShiftScore, OvertimeShiftScores), 
@@ -342,6 +383,13 @@ calculate_overtime_shift_scores(Worker_Day_Shift, OvertimeShifts, OvertimeShiftS
         OvertimeShiftScoreOut #= OvertimeShiftScoreTemp + OvertimeShiftScore
     ).
 
+% calculate_night_shift_scores(
+%     +Worker_Day_NightShift,
+%     +NightShiftScores,
+%     -NightShiftScoresOut
+% )
+%
+% Calculates the night shift scores for each worker
 calculate_night_shift_scores(Worker_Day_NightShift, NightShiftScores, NightShiftScoresOut) :-
     ( foreach(Day_NightShift, Worker_Day_NightShift), 
       foreach(NightShiftScore, NightShiftScores),
@@ -352,6 +400,10 @@ calculate_night_shift_scores(Worker_Day_NightShift, NightShiftScores, NightShift
         )
     ).
 
+% score_distances(+Scores, -DistancesSum)
+%
+% Calculates the sum of the distances for each combination of scores
+% Minimizing this value will "balance" the scores
 score_distances(Scores, DistancesSum) :-
     map_product(dist, Scores, Scores, Distances),
     sum(Distances, DistancesSum).
