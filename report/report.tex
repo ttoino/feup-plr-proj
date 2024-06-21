@@ -9,7 +9,7 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
-% \usepackage{pbalance} % for balancing the last page
+\usepackage{pbalance} % for balancing the last page
 \usepackage{enumitem} % for enumerated lists that can continue numbering
 \usepackage{soul} % for underlining text with wrapping
 \usepackage[htt]{hyphenat} % for text hyphenation and wrapping
@@ -75,7 +75,7 @@ In some industries, scheduling of workers is very easy: all workers come in at t
 However, in the pharmacy industry, scheduling can become a complex task, especially for smaller pharmacies, where the number of workers is reduced and schedules are adapted to meet the preferences of the workers.
 
 With that in mind, a pharmacy in Portugal contacted us to create a scheduling system that would replace their current manual scheduling system. The new scheduling system should be faster and create better schedules when compared to the current system.
-In section \ref{section:problem-statement}, the problem and the criteria used to compare schedules will be specified. In section \ref{section:proposed-model}, the proposed approach to model the problem will be presented, with a focus on developing an implementation for SICStus Prolog 4.8.0. In section \ref{section:results}, we will evaluate the model and discuss ways to improve its performance. In section \ref{section:further-work}, ideas for further work will be presented. Finally, in section \ref{section:conclusion}, the conclusions of this paper will be presented.
+In section \ref{section:problem-statement}, the problem and the criteria used to compare schedules will be specified. In section \ref{section:proposed-model}, the proposed approach to model the problem will be presented, with a focus on developing an implementation for SICStus Prolog 4.9.0. In section \ref{section:results}, we will evaluate the model and discuss ways to improve its performance. In section \ref{section:further-work}, ideas for further work will be presented. Finally, in section \ref{section:conclusion}, the conclusions of this paper will be presented.
 
 \section{Problem Statement}
 \label{section:problem-statement}
@@ -321,13 +321,63 @@ Finally, the \texttt{Score} variable is maximized using the  \texttt{maximize(Sc
 \section{Results}
 \label{section:results}
 
+In order to determine the best search strategy for the model proposed in section \ref{section:proposed-model} and strategies to improve its performance even further, two sets experiments were conducted.
+
+In each experiment, SICStus Prolog 4.9.0 was used. Two different sets of intial conditions were available: the "empty" input, where all inputs were set to their most general values, and the "known" input, where some shifts and absences were known ahead of time. Furthermore, the measured values were obtained by running the model a single time for each experiment. A timeout of 5 minutes was used since this system is meant to be used to help the user make scheduling decisions in real-time.
+
+\subsection{Search Strategies Comparison}
+
+The first series of experiments aimed to determine the best search strategy for the proposed model. The results of these experiments, as well as the list of 40 unique search strategies tested, are available in the appendix.
+
+From the results, it can be seen that the most effective search strategy is "impact down", both with the "empty" and "known" inputs. This strategy was able to start generating the best schedules out of all the strategies tested within one second of the start of the search.
+
+Regarding the "known" input, most strategies were initially able to generate good schedules, but only 3 strategies were able to generate significantly better schedules than those initially generated.
+
+Another interesting observation is that, while performing these experiments, it was noticed that many of the search strategies were not producing any results. It was then noticed that putting the \texttt{Score} variable at the end of the search variables list produced much better results. This is likely due to the fact that the \texttt{Score} variable is not very relevant for assigning schedules, but rather for evaluating them. As such, it is better to have it at the end of the search variables list.
+
+Finally, the \texttt{enum} option is not presented in the comparison, because results were very similar to the \texttt{step} search option. The \texttt{bisect} option was also not presented, because its performance was significantly worse than the other options.
+
+\subsection{Global Constraints Comparison}
+
+The second series of experiments aimed to determine if and how the performance of the model could be improved. In these experiments, some constraints were replaced by global constraints. Specifically, some chained additions were replaced by the \texttt{sum} constraint. Other similar improvements were also made. The "impact down" strategy was used for both measurements. The results of this experiment are available in the appendix.
+
+From the results, it can be seen that replacing some constraints with global constraints improved performance significantly, especially up until the 40 seconds mark. After that point, the performance got worse when compared to the model before the changes. This is likely due to the fact that replacing some constraints with global constraints made the model change its search order, which made it harder to find better schedules after a certain point.
+
+Overall, this change is positive for the proposed model, since it is designed to obtain the highest quality model in the shortest amount of time. It is also likely that introducing even more global constraints would help the model generate even better schedules in an even shorter amount of time. 
+
 \section{Further Work}
 \label{section:further-work}
 
+The proposed model can be further improved in several ways. Some of the most promising improvements are listed in the following sections.
 
+\subsection*{Replace more constraints with global constraints}
+
+It was observed that replacing some constraints with global constraints improved the performance of the model. It is likely that replacing even more constraints with global constraints would further improve the performance of the model.
+
+\subsection*{Refine objective function}
+
+Refining the objective function could improve the quality of the generated schedules. For example, the weights of the different optimization criteria could be adjusted to better reflect the importance of each criterion.
+
+\subsection*{Implement worker groups}
+
+Implementing worker groups could improve the quality of the generated schedules. Worker groups could be used to ensure that workers with similar preferences are assigned similar schedules. Although this was considered a low priority criterion, it could still be beneficial to implement it.
+
+\subsection*{Research if implementation of custom global constraints can improve performance}
+
+It is likely that the performance of the model could be further improved by implementing custom global constraints. These constraints could be tailored to the specific requirements of the scheduling problem and could help the model find better schedules more efficiently.
+
+\subsection*{Implement model in another solver}
+
+One of the main reasons for choosing SICStus Prolog was its ease of use and the fact that it is a well-known solver for CLP problems. 
+Implementing the model in another solver, such as CPLEX ILOG or OR-Tools, and comparing the performance could be beneficial. Different solvers have different strengths and weaknesses, and it is possible that another solver could find better schedules more efficiently.
 
 \section{Conclusion}
 \label{section:conclusion}
+
+Concluding this paper, it can be seen that the proposed model is able to generate valid schedules that meet the preferences of individual workers. Although the model can still be improved, the results are very satisfactory and show that the proposed approach is a promising solution for the scheduling problem presented in section \ref{section:problem-statement}.
+
+Although CLP is a very powerful tool for solving scheduling problems, it is not without its limitations. The main limitation of CLP is that it can be computationally expensive to find the optimal solution for large scheduling problems.
+As such, strategies other than CLP may be needed to solve very large scheduling problems.
 
 % \bibliographystyle{./IEEEtran}
 % \bibliography{./IEEEabrv,./IEEEexample,./report}
@@ -358,7 +408,7 @@ Finally, the \texttt{Score} variable is maximized using the  \texttt{maximize(Sc
 
 \begin{center}
     \begin{tikzpicture}
-        \begin{semilogxaxis}[title=Score over time (empty input)]
+        \begin{semilogxaxis}[title=Search Strategies Comparison - Score over time with "empty" input]
             \addplot[color=red, mark=o] table {./results/empty/anti_first_fail-step-down-bab.csv};
             \addplot[color=red, mark=square] table {./results/empty/anti_first_fail-step-median-bab.csv};
             \addplot[color=red, mark=diamond] table {./results/empty/anti_first_fail-step-middle-bab.csv};
@@ -414,7 +464,7 @@ Finally, the \texttt{Score} variable is maximized using the  \texttt{maximize(Sc
 
 \begin{center}
     \begin{tikzpicture}
-        \begin{semilogxaxis}[title=Score over time (known absences and night shifts)]
+        \begin{semilogxaxis}[title=Search Strategies Comparison - Score over time with "known" input]
             \addlegendimage{color=white, only marks}
             \addplot[color=red, mark=o] table {./results/known/anti_first_fail-step-down-bab.csv};
             % \addplot[color=red, mark=square] table {./results/known/anti_first_fail-step-median-bab.csv};
@@ -505,7 +555,7 @@ Finally, the \texttt{Score} variable is maximized using the  \texttt{maximize(Sc
 
 \begin{center}
     \begin{tikzpicture}
-        \begin{semilogxaxis}[title=Score over time (before and after global constraints)]
+        \begin{semilogxaxis}[title=Global Constraints Comparison - Score over time with "empty" input]
             \addplot[color=blue, mark=o] table {./results/old.csv};
             \addplot[color=red, mark=o] table {./results/empty/impact-step-down-bab.csv};
 
