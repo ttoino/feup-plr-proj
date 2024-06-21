@@ -4,8 +4,76 @@
 
 :- consult('util.pl').
 
+% schedule(
+%     +Options,
+%     -Day_Worker_Shift,
+%     -Day_Shift_Worker,
+%     -Worker_Day_Shift,
+%     -Shift_Day_Worker,
+%     -Day_Worker_NightShift,
+%     -Day_NightShift_Worker,
+%     -Worker_Day_NightShift,
+%     -NightShift_Day_Worker,
+%     -AvailableAbsencesOut,
+%     -RotatedShiftScoresOut,
+%     -OvertimeShiftScoresOut,
+%     -NightShiftScoresOut,
+%     -Score,
+%     +Workers,
+%     +Shifts,
+%     +NightShifts,
+%     +Days,
+%     +OvertimeShifts,
+%     +DailyOvertimeShifts,
+%     +LateShifts,
+%     +WeeklyLateShifts,
+%     +AlternativeShifts,
+%     +IncompatibleShifts,
+%     +PreferredShifts,
+%     +PreferredNightShifts,
+%     +RotatedShifts,
+%     +KnownShifts,
+%     +KnownNightShifts,
+%     +AvailableAbsences,
+%     +RotatedShiftScores,
+%     +OvertimeShiftScores,
+%     +NightShiftScores
+% )
+%
+% Schedules the workers to the shifts, maximizing the score.
+%
+% `Flags` is a list of options for the labeling predicate.
+% `Day_Worker_Shift` is a matrix where each line is a day and each column is a 
+%   worker, containing the shift assigned to said worker in said day.
+%   0 means no shift is assigned.
+% `Day_Shift_Worker` is a matrix where each line is a day and each column is a
+%   shift, containing the worker assigned to said shift in said day.
+%   0 means no worker is assigned.
+% `Worker_Day_Shift` is the transpose of `Day_Shift_Worker`.
+% `Shift_Day_Worker` is the transpose of `Day_Worker_Shift`.
+% `Day_Worker_NightShift` is the same as `Day_Worker_Shift`, but for night 
+%   shifts.
+% `Day_NightShift_Worker` is the same as `Day_Shift_Worker`, but for night
+%   shifts.
+% `Worker_Day_NightShift` is the transpose of `Day_NightShift_Worker`.
+% `NightShift_Day_Worker` is the transpose of `Day_Worker_NightShift`.
+% `AvailableAbsencesOut` is a list where each element is the number of
+%   available absences for the corresponding worker.
+% `RotatedShiftScoresOut` is a matrix where each line is a worker and each
+%   column is a rotated shift, containing the number of times the worker has
+%   been assigned to said shift.
+% `OvertimeShiftScoresOut` is a list where each element is the number of times
+%   the corresponding worker has been assigned to an overtime shift.
+% `NightShiftScoresOut` is a list where each element is the number of night
+%   shifts assigned to the corresponding worker.
+% `Score` is the score of the schedule.
+%
+% The remaining parameters are explained in the `input.pl` file.
 schedule(
+    % Options
     Flags,
+
+    % Output
     Day_Worker_Shift,
     Day_Shift_Worker,
     Worker_Day_Shift,
@@ -19,6 +87,8 @@ schedule(
     OvertimeShiftScoresOut,
     NightShiftScoresOut,
     Score,
+
+    % Input
     Workers,
     Shifts,
     NightShifts,
@@ -119,7 +189,7 @@ schedule(
         Day_NightShift_Worker
     ], AllAssignments),
     append(AllAssignments, Variables),
-    append([Score], Variables, AllVariables),
+    append(Variables, [Score], AllVariables),
 
     write('Searching...'), nl,
     append(Flags, [maximize(Score)], AllFlags),

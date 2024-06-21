@@ -214,7 +214,7 @@ benchmark(Flags) :-
 main :-
     flags(Flags),
     timeout(Timeout),
-    append(Flags, [timeout(Timeout, Flag)], AllFlags),
+    append(Flags, [time_out(Timeout, Flag)], AllFlags),
     schedule(
         AllFlags,
         Day_Worker_Shift, 
@@ -232,5 +232,6 @@ main :-
     fd_statistics, nl,
     statistics, nl,
     print_outputs(AvailableAbsences, RotatedShiftScores, OvertimeShiftScores, NightShiftScores),
-    print_schedule(Day_Worker_Shift, Shift_Day_Worker, NightShift_Day_Worker).
+    print_schedule(Day_Worker_Shift, Shift_Day_Worker, NightShift_Day_Worker),
+    write('Score: '), write(Score), nl.
 main :- write('Could not find solution in the given time'), nl.
